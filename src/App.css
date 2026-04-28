@@ -1,0 +1,42 @@
+/* App styles - using Tailwind CSS primarily */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: white;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: rgb(3, 7, 18);
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Input focus styles */
+input:focus {
+  outline: none;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  input,
+  textarea {
+    background-color: rgb(15, 23, 42);
+    color: white;
+  }
+}
