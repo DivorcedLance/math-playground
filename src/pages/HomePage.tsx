@@ -11,8 +11,7 @@ export const HomePage: React.FC = () => {
           🧮 Math Playground
         </h1>
         <p className="text-xl text-slate-600 dark:text-slate-400 mb-6 max-w-2xl mx-auto">
-          Una plataforma interactiva para explorar, aprender y practicar herramientas matemáticas.
-          Visualiza procedimientos paso a paso y resuelve problemas de forma detallada.
+          Herramientas matemáticas en formato rápido: ingresa datos, revisa el procedimiento y obtén el resultado.
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
           <a
@@ -33,26 +32,26 @@ export const HomePage: React.FC = () => {
       {/* Features */}
       <section>
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-8">
-          Características
+          Qué ofrece
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
             <div className="text-3xl mb-3">🔢</div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-              Cálculos Precisos
+              Fracciones exactas
             </h3>
             <p className="text-slate-600 dark:text-slate-400">
-              Utilizamos fracciones para mantener la precisión exacta en todos los cálculos matemáticos.
+              Evita decimales innecesarios.
             </p>
           </div>
 
           <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
             <div className="text-3xl mb-3">📖</div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-              Procedimientos Detallados
+              Paso a paso
             </h3>
             <p className="text-slate-600 dark:text-slate-400">
-              Aprende cómo se resuelven los problemas paso a paso, no solo el resultado final.
+              Verás el despeje o desarrollo en cada herramienta.
             </p>
           </div>
 
@@ -62,7 +61,7 @@ export const HomePage: React.FC = () => {
               Responsive
             </h3>
             <p className="text-slate-600 dark:text-slate-400">
-              Accede desde cualquier dispositivo. Diseñado para funcionar perfectamente en móvil.
+              Pensado para móvil y escritorio.
             </p>
           </div>
         </div>
@@ -71,7 +70,7 @@ export const HomePage: React.FC = () => {
       {/* Tools by Category */}
       <section>
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-8">
-          Herramientas Disponibles
+          Menú de herramientas
         </h2>
         <div className="space-y-8">
           {Object.entries(TOOL_CATEGORIES).map(([categoryKey, category]) => (

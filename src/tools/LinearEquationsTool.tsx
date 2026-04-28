@@ -1,6 +1,18 @@
 import React, { useState } from 'react';
 import Fraction from 'fraction.js';
-import { fractionToString } from '../utils/fractions';
+import { MathText } from '../components';
+import { preferFractions } from '../utils/formatMath';
+
+function toLatexFraction(fraction: Fraction): string {
+  const numerator = Number(fraction.n);
+  const denominator = Number(fraction.d);
+
+  if (denominator === 1) {
+    return `${numerator}`;
+  }
+
+  return `\\frac{${numerator}}{${denominator}}`;
+}
 
 interface SolutionStep {
   description: string;
@@ -35,22 +47,22 @@ export const LinearEquationsTool: React.FC = () => {
       const newSteps: SolutionStep[] = [
         {
           description: 'Ecuación original',
-          equation: `${aNum}/${Number(a.d)}x + ${bNum}/${Number(b.d)} = 0`,
+          equation: `${toLatexFraction(a)}x + ${toLatexFraction(b)} = 0`,
         },
         {
-          description: 'Restar ' + fractionToString(b as any) + ' de ambos lados',
-          equation: `${aNum}/${Number(a.d)}x = -${Math.abs(bNum)}/${Number(b.d)}`,
+          description: 'Restar el término constante',
+          equation: `${toLatexFraction(a)}x = -${toLatexFraction(new Fraction(Math.abs(bNum), Number(b.d)))}`,
         },
       ];
 
       const x = (b.neg() as Fraction).div(a) as Fraction;
       newSteps.push({
-        description: `Dividir por ${fractionToString(a as any)}`,
-        equation: `x = ${fractionToString(x as any)}`,
+        description: 'Dividir entre el coeficiente de x',
+        equation: `x = ${toLatexFraction(x)}`,
       });
 
       setSteps(newSteps);
-      setSolution(fractionToString(x as any));
+      setSolution(toLatexFraction(x));
     } catch (err: any) {
       setSolution('Error: ' + err.message);
       setSteps([]);
@@ -59,37 +71,42 @@ export const LinearEquationsTool: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Instructions */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-        <p className="text-blue-900 dark:text-blue-300 font-semibold">
-          Resuelve ecuaciones lineales de la forma: ax + b = 0
-        </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+        <div className="rounded-lg border px-4 py-3 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+          <div className="font-medium">Forma:</div>
+          <MathText expression="ax + b = 0" className="inline-block" />
+        </div>
+        <div className="rounded-lg border px-4 py-3 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+          <div className="font-medium">Entrada:</div>
+          <MathText expression={preferFractions('3/2')} className="inline-block" />
+          <span className="ml-2 text-xs text-slate-600 dark:text-slate-300">usa fracciones</span>
+        </div>
       </div>
 
       {/* Input */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-2">
-            Coeficiente de x (a)
+            a
           </label>
           <input
             type="text"
             value={aCoeff}
             onChange={(e) => setACoeff(e.target.value)}
-            placeholder="Ej: 2, 1/2, -3"
+            placeholder="Ej: 2"
             className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono"
           />
         </div>
 
         <div>
           <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-2">
-            Término constante (b)
+            b
           </label>
           <input
             type="text"
             value={bCoeff}
             onChange={(e) => setBCoeff(e.target.value)}
-            placeholder="Ej: 4, -1/3, 5"
+            placeholder="Ej: 4"
             className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono"
           />
         </div>
@@ -100,23 +117,19 @@ export const LinearEquationsTool: React.FC = () => {
         onClick={handleSolve}
         className="w-full px-4 py-3 bg-primary-600 dark:bg-primary-700 text-white rounded-lg hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors font-semibold"
       >
-        Resolver
+        Calcular
       </button>
 
       {/* Steps */}
       {steps.length > 0 && (
         <div className="space-y-3">
-          <h3 className="font-semibold text-slate-900 dark:text-white">
-            Procedimiento
-          </h3>
           {steps.map((step, i) => (
-            <div key={i} className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-                Paso {i + 1}: {step.description}
+            <div key={i} className="p-4 rounded-lg border border-slate-300 dark:border-slate-700">
+              <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">
+                Paso {i + 1}
               </p>
-              <p className="font-mono text-slate-900 dark:text-white text-lg">
-                {step.equation}
-              </p>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">{step.description}</p>
+              <MathText expression={preferFractions(step.equation)} className="block text-lg text-slate-900 dark:text-white" />
             </div>
           ))}
         </div>
@@ -124,14 +137,9 @@ export const LinearEquationsTool: React.FC = () => {
 
       {/* Solution */}
       {solution && (
-        <div className="p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-          <h3 className="font-semibold text-green-900 dark:text-green-200 mb-2">
-            Solución
-          </h3>
-          <div className="p-4 bg-white dark:bg-slate-900 rounded border border-green-300 dark:border-green-700">
-            <p className="font-mono text-slate-900 dark:text-white text-lg">
-              x = {solution}
-            </p>
+        <div className="p-6 border-2 border-green-300 dark:border-green-600 rounded-lg">
+          <div className="p-4 rounded border border-green-300 dark:border-green-600">
+            <MathText expression={preferFractions(`x = ${solution}`)} className="block text-lg text-slate-900 dark:text-white" />
           </div>
         </div>
       )}

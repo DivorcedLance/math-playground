@@ -1,150 +1,86 @@
 import React, { useState } from 'react';
 import { Download, FileText } from 'lucide-react';
+import { MathText } from '../components';
+import { preferFractions } from '../utils/formatMath';
 
 interface Formula {
   id: string;
   title: string;
   category: string;
-  content: React.ReactNode;
+  formulaLatex: string;
+  exampleLatex: string;
 }
 
 const FORMULAS: Formula[] = [
   {
     id: 'exp-product',
-    title: 'Producto de potencias de la misma base',
+    title: 'Producto de potencias',
     category: 'Leyes de Exponentes',
-    content: (
-      <div className="space-y-4">
-        <p className="font-semibold">a^m · a^n = a^(m+n)</p>
-        <p className="text-slate-600 dark:text-slate-400">
-          Cuando multiplicamos potencias de la misma base, sumamos los exponentes.
-        </p>
-        <p className="text-sm text-slate-500 dark:text-slate-500">Ejemplo: x³ · x² = x⁵</p>
-      </div>
-    ),
+    formulaLatex: 'a^m \\cdot a^n = a^{m+n}',
+    exampleLatex: 'x^3 \\cdot x^2 = x^5',
   },
   {
     id: 'exp-quotient',
-    title: 'Cociente de potencias de la misma base',
+    title: 'Cociente de potencias',
     category: 'Leyes de Exponentes',
-    content: (
-      <div className="space-y-4">
-        <p className="font-semibold">a^m ÷ a^n = a^(m-n)</p>
-        <p className="text-slate-600 dark:text-slate-400">
-          Cuando dividimos potencias de la misma base, restamos los exponentes.
-        </p>
-        <p className="text-sm text-slate-500 dark:text-slate-500">Ejemplo: x⁵ ÷ x² = x³</p>
-      </div>
-    ),
+    formulaLatex: 'a^m \\div a^n = a^{m-n}',
+    exampleLatex: 'x^5 \\div x^2 = x^3',
   },
   {
     id: 'exp-power',
     title: 'Potencia de una potencia',
     category: 'Leyes de Exponentes',
-    content: (
-      <div className="space-y-4">
-        <p className="font-semibold">(a^m)^n = a^(m·n)</p>
-        <p className="text-slate-600 dark:text-slate-400">
-          La potencia de una potencia se obtiene multiplicando los exponentes.
-        </p>
-        <p className="text-sm text-slate-500 dark:text-slate-500">Ejemplo: (x²)³ = x⁶</p>
-      </div>
-    ),
+    formulaLatex: '(a^m)^n = a^{m n}',
+    exampleLatex: '(x^2)^3 = x^6',
   },
   {
     id: 'exp-product-base',
     title: 'Potencia de un producto',
     category: 'Leyes de Exponentes',
-    content: (
-      <div className="space-y-4">
-        <p className="font-semibold">(a·b)^n = a^n · b^n</p>
-        <p className="text-slate-600 dark:text-slate-400">
-          La potencia de un producto es igual al producto de las potencias.
-        </p>
-        <p className="text-sm text-slate-500 dark:text-slate-500">Ejemplo: (2x)³ = 2³ · x³ = 8x³</p>
-      </div>
-    ),
+    formulaLatex: '(a b)^n = a^n b^n',
+    exampleLatex: '(2x)^3 = 8x^3',
   },
   {
     id: 'log-def',
-    title: 'Definición de Logaritmo',
+    title: 'Definición de logaritmo',
     category: 'Logaritmos',
-    content: (
-      <div className="space-y-4">
-        <p className="font-semibold">a^x = b ⟺ log_a(b) = x</p>
-        <p className="text-slate-600 dark:text-slate-400">
-          El logaritmo es la operación inversa de la exponenciación.
-        </p>
-        <p className="text-sm text-slate-500 dark:text-slate-500">Ejemplo: 2³ = 8 ⟺ log₂(8) = 3</p>
-      </div>
-    ),
+    formulaLatex: 'a^x = b \\leftrightarrow \\log_a(b) = x',
+    exampleLatex: '2^3 = 8 \\leftrightarrow \\log_2(8) = 3',
   },
   {
     id: 'log-product',
     title: 'Logaritmo de un producto',
     category: 'Logaritmos',
-    content: (
-      <div className="space-y-4">
-        <p className="font-semibold">log_a(x·y) = log_a(x) + log_a(y)</p>
-        <p className="text-slate-600 dark:text-slate-400">
-          El logaritmo de un producto es suma de logaritmos.
-        </p>
-      </div>
-    ),
+    formulaLatex: '\\log_a(xy) = \\log_a(x) + \\log_a(y)',
+    exampleLatex: '\\log(xy) = \\log(x) + \\log(y)',
   },
   {
     id: 'log-quotient',
     title: 'Logaritmo de un cociente',
     category: 'Logaritmos',
-    content: (
-      <div className="space-y-4">
-        <p className="font-semibold">log_a(x/y) = log_a(x) - log_a(y)</p>
-        <p className="text-slate-600 dark:text-slate-400">
-          El logaritmo de un cociente es diferencia de logaritmos.
-        </p>
-      </div>
-    ),
+    formulaLatex: '\\log_a(x/y) = \\log_a(x) - \\log_a(y)',
+    exampleLatex: '\\log(x/y) = \\log(x) - \\log(y)',
   },
   {
     id: 'notable-binomio',
     title: 'Cuadrado de un Binomio (a ± b)²',
     category: 'Productos Notables',
-    content: (
-      <div className="space-y-4">
-        <p className="font-semibold">(a + b)² = a² + 2ab + b²</p>
-        <p className="font-semibold">(a - b)² = a² - 2ab + b²</p>
-        <p className="text-slate-600 dark:text-slate-400">
-          El cuadrado de un binomio es: cuadrado del primero, más o menos el doble producto, más cuadrado del segundo.
-        </p>
-      </div>
-    ),
+    formulaLatex: '(a + b)^2 = a^2 + 2ab + b^2',
+    exampleLatex: '(x + 3)^2 = x^2 + 6x + 9',
   },
   {
     id: 'notable-diff-squares',
     title: 'Diferencia de Cuadrados a² - b²',
     category: 'Productos Notables',
-    content: (
-      <div className="space-y-4">
-        <p className="font-semibold">a² - b² = (a + b)(a - b)</p>
-        <p className="text-slate-600 dark:text-slate-400">
-          La diferencia de cuadrados se factoriza como suma por diferencia.
-        </p>
-      </div>
-    ),
+    formulaLatex: 'a^2 - b^2 = (a + b)(a - b)',
+    exampleLatex: 'x^2 - 9 = (x + 3)(x - 3)',
   },
   {
     id: 'notable-cubo',
     title: 'Cubo de un Binomio (a ± b)³',
     category: 'Productos Notables',
-    content: (
-      <div className="space-y-4">
-        <p className="font-semibold">(a + b)³ = a³ + 3a²b + 3ab² + b³</p>
-        <p className="font-semibold">(a - b)³ = a³ - 3a²b + 3ab² - b³</p>
-        <p className="text-slate-600 dark:text-slate-400">
-          El cubo de un binomio se desarrolla usando coeficientes binomiales.
-        </p>
-      </div>
-    ),
+    formulaLatex: '(a + b)^3 = a^3 + 3a^2 b + 3 a b^2 + b^3',
+    exampleLatex: '(x + 1)^3 = x^3 + 3x^2 + 3x + 1',
   },
 ];
 
@@ -156,20 +92,63 @@ export const FormulasPage: React.FC = () => {
     : FORMULAS;
 
   const handlePrintPDF = () => {
-    // Aquí iría la generación del PDF
-    alert('Descarga de PDF: Se implementará próximamente');
+    const printableWindow = window.open('', '_blank', 'width=1024,height=768');
+
+    if (!printableWindow) {
+      alert('No se pudo abrir la ventana de impresión. Verifica los pop-ups del navegador.');
+      return;
+    }
+
+    const styles = `
+      <style>
+        body { font-family: Arial, sans-serif; padding: 24px; color: #0f172a; }
+        h1 { font-size: 24px; margin-bottom: 8px; }
+        h2 { font-size: 18px; margin: 24px 0 12px; }
+        h3 { font-size: 16px; margin: 0 0 6px; }
+        p { margin: 0 0 6px; line-height: 1.45; }
+        .card { border: 1px solid #cbd5e1; border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+        .category { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #475569; margin-bottom: 10px; }
+        .formula { break-inside: avoid; }
+        @media print { button { display: none; } }
+      </style>
+    `;
+
+    const content = filteredFormulas
+      .map(formula => `
+        <div class="card formula">
+          <div class="category">${formula.category}</div>
+          <h3>${formula.title}</h3>
+        </div>
+      `)
+      .join('');
+
+    printableWindow.document.open();
+    printableWindow.document.write(`
+      <!doctype html>
+      <html>
+        <head>
+          <title>Compendio de fórmulas</title>
+          ${styles}
+        </head>
+        <body>
+          <h1>Compendio de Fórmulas</h1>
+          <p>Listado generado desde Math Playground.</p>
+          <h2>${selectedCategory || 'Todas las categorías'}</h2>
+          ${content}
+        </body>
+      </html>
+    `);
+    printableWindow.document.close();
+    printableWindow.focus();
+    printableWindow.print();
   };
 
   return (
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-          📊 Compendio de Fórmulas
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400">
-          Consulta las principales fórmulas matemáticas organizadas por tema.
-        </p>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">📊 Fórmulas</h1>
+        <p className="text-slate-600 dark:text-slate-400">Referencia rápida, sin teoría larga.</p>
       </div>
 
       {/* Controls */}
@@ -216,9 +195,9 @@ export const FormulasPage: React.FC = () => {
         {filteredFormulas.map(formula => (
           <div
             key={formula.id}
-            className="p-6 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-primary-400 dark:hover:border-primary-600 transition-colors"
+            className="p-5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-primary-400 dark:hover:border-primary-600 transition-colors"
           >
-            <div className="flex items-start gap-3 mb-4">
+            <div className="flex items-start gap-3 mb-3">
               <FileText className="text-primary-600 dark:text-primary-400 flex-shrink-0 mt-1" size={20} />
               <div>
                 <h3 className="font-semibold text-slate-900 dark:text-white">
@@ -229,8 +208,10 @@ export const FormulasPage: React.FC = () => {
                 </p>
               </div>
             </div>
-            <div className="ml-8 text-slate-700 dark:text-slate-300">
-              {formula.content}
+            <div className="ml-8 space-y-2 text-sm text-slate-700 dark:text-slate-300">
+              <MathText expression={preferFractions(formula.formulaLatex)} className="block text-base text-slate-900 dark:text-white" />
+              <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Ejemplo</p>
+              <MathText expression={preferFractions(formula.exampleLatex)} className="block text-sm text-slate-700 dark:text-slate-300" />
             </div>
           </div>
         ))}

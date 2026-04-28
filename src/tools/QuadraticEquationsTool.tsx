@@ -1,11 +1,23 @@
 import React, { useState } from 'react';
 import Fraction from 'fraction.js';
-import { fractionToString } from '../utils/fractions';
+import { MathText } from '../components';
+import { preferFractions } from '../utils/formatMath';
 
 interface QuadraticSolution {
   discriminant: Fraction;
   root1: Fraction | null;
   root2: Fraction | null;
+}
+
+function toLatexFraction(fraction: Fraction): string {
+  const numerator = Number(fraction.n);
+  const denominator = Number(fraction.d);
+
+  if (denominator === 1) {
+    return `${numerator}`;
+  }
+
+  return `\\frac{${numerator}}{${denominator}}`;
 }
 
 export const QuadraticEquationsTool: React.FC = () => {
@@ -79,50 +91,59 @@ export const QuadraticEquationsTool: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Instructions */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-        <p className="text-blue-900 dark:text-blue-300 font-semibold">
-          Resuelve ecuaciones cuadráticas de la forma: ax² + bx + c = 0
-        </p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+        <div className="rounded-lg border px-4 py-3 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+          <div className="font-medium">Forma:</div>
+          <MathText expression="ax^2 + bx + c = 0" className="inline-block" />
+        </div>
+        <div className="rounded-lg border px-4 py-3 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+          <div className="font-medium">Salida:</div>
+          <span className="text-xs text-slate-600 dark:text-slate-300">Δ y raíces</span>
+        </div>
+        <div className="rounded-lg border px-4 py-3 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+          <div className="font-medium">Entrada:</div>
+          <MathText expression={preferFractions('1/2')} className="inline-block" />
+          <span className="ml-2 text-xs text-slate-600 dark:text-slate-300">usa fracciones</span>
+        </div>
       </div>
 
       {/* Input */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-2">
-            Coeficiente a (x²)
+            a
           </label>
           <input
             type="text"
             value={aCoeff}
             onChange={(e) => setACoeff(e.target.value)}
-            placeholder="Ej: 1, 2, 1/2"
+            placeholder="Ej: 1"
             className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono"
           />
         </div>
 
         <div>
           <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-2">
-            Coeficiente b (x)
+            b
           </label>
           <input
             type="text"
             value={bCoeff}
             onChange={(e) => setBCoeff(e.target.value)}
-            placeholder="Ej: -5, 3, 1/2"
+            placeholder="Ej: -5"
             className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono"
           />
         </div>
 
         <div>
           <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-2">
-            Coeficiente c
+            c
           </label>
           <input
             type="text"
             value={cCoeff}
             onChange={(e) => setCCoeff(e.target.value)}
-            placeholder="Ej: 6, -1, 1/4"
+            placeholder="Ej: 6"
             className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono"
           />
         </div>
@@ -133,13 +154,13 @@ export const QuadraticEquationsTool: React.FC = () => {
         onClick={handleSolve}
         className="w-full px-4 py-3 bg-primary-600 dark:bg-primary-700 text-white rounded-lg hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors font-semibold"
       >
-        Resolver
+        Calcular
       </button>
 
       {/* Error */}
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <p className="text-red-800 dark:text-red-200">
+        <div className="p-4 border-2 border-red-400 dark:border-red-600 rounded-lg">
+          <p className="text-red-700 dark:text-red-300">
             <strong>Error:</strong> {error}
           </p>
         </div>
@@ -149,40 +170,30 @@ export const QuadraticEquationsTool: React.FC = () => {
       {solution && (
         <div className="space-y-4">
           {/* Discriminant */}
-          <div className="p-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-            <h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-3">
-              Discriminante (Δ)
-            </h3>
-            <div className="space-y-2 font-mono text-slate-900 dark:text-white">
-              <p>Δ = b² - 4ac</p>
-              <p>Δ = {fractionToString(solution.discriminant as any)}</p>
+          <div className="p-6 border-2 border-blue-300 dark:border-blue-600 rounded-lg">
+            <div className="space-y-2 text-slate-900 dark:text-white">
+              <MathText expression={preferFractions('\Delta = b^2 - 4ac')} className="block text-slate-900 dark:text-white" />
+              <MathText expression={preferFractions(`\\Delta = ${toLatexFraction(solution.discriminant)}`)} className="block text-slate-900 dark:text-white" />
             </div>
           </div>
 
           {/* Roots */}
           {solution.root1 && solution.root2 ? (
-            <div className="p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-              <h3 className="font-semibold text-green-900 dark:text-green-200 mb-3">
-                Raíces Reales
-              </h3>
+            <div className="p-6 border-2 border-green-300 dark:border-green-600 rounded-lg">
               <div className="space-y-3">
                 <div>
-                  <p className="text-sm text-green-700 dark:text-green-300 mb-1">Primera raíz:</p>
-                  <p className="font-mono text-lg text-slate-900 dark:text-white">
-                    x₁ = {fractionToString(solution.root1 as any)}
-                  </p>
+                  <p className="text-sm text-green-700 dark:text-green-300 mb-1">x₁</p>
+                  <MathText expression={preferFractions(`x_1 = ${toLatexFraction(solution.root1!)}`)} className="block text-lg text-slate-900 dark:text-white" />
                 </div>
                 <div>
-                  <p className="text-sm text-green-700 dark:text-green-300 mb-1">Segunda raíz:</p>
-                  <p className="font-mono text-lg text-slate-900 dark:text-white">
-                    x₂ = {fractionToString(solution.root2 as any)}
-                  </p>
+                  <p className="text-sm text-green-700 dark:text-green-300 mb-1">x₂</p>
+                  <MathText expression={preferFractions(`x_2 = ${toLatexFraction(solution.root2!)}`)} className="block text-lg text-slate-900 dark:text-white" />
                 </div>
               </div>
             </div>
           ) : (
-            <div className="p-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-              <p className="text-yellow-800 dark:text-yellow-200">
+            <div className="p-6 border-2 border-yellow-400 dark:border-yellow-600 rounded-lg">
+              <p className="text-yellow-700 dark:text-yellow-300">
                 <strong>Sin soluciones reales:</strong> El discriminante es negativo (Δ &lt; 0)
               </p>
             </div>

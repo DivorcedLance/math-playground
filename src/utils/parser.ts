@@ -115,9 +115,14 @@ function parseExpression(tokens: Token[], startIdx = 0): Polynomial {
     i = term.endIdx;
 
     // Check for next operator
-    if (i < tokens.length && tokens[i].type === 'operator') {
-      currentOp = tokens[i].value;
-      i++;
+    if (i < tokens.length) {
+      if (tokens[i].type === 'operator') {
+        currentOp = tokens[i].value;
+        i++;
+      } else if (tokens[i].type === 'lparen' || tokens[i].type === 'variable' || tokens[i].type === 'number') {
+        // Implicit multiplication: (x+1)(x-1), 2x, x(x+1)
+        currentOp = '*';
+      }
     }
   }
 

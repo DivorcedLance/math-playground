@@ -4,6 +4,9 @@ import { NotableProductsTool } from '../tools/NotableProductsTool';
 import { LinearEquationsTool } from '../tools/LinearEquationsTool';
 import { QuadraticEquationsTool } from '../tools/QuadraticEquationsTool';
 import { PolynomialEvalTool } from '../tools/PolynomialEvalTool';
+import { RationalizationTool } from '../tools/RationalizationTool';
+import { PolynomialDivisionTool } from '../tools/PolynomialDivisionTool';
+import { SystemsEquationsTool } from '../tools/SystemsEquationsTool';
 
 interface ToolPageProps {
   toolId: string;
@@ -41,6 +44,12 @@ export const ToolPage: React.FC<ToolPageProps> = ({ toolId }) => {
         return <QuadraticEquationsTool />;
       case 'polynomial-eval':
         return <PolynomialEvalTool />;
+      case 'rationalization':
+        return <RationalizationTool />;
+      case 'polynomial-division':
+        return <PolynomialDivisionTool />;
+      case 'systems-equations':
+        return <SystemsEquationsTool />;
       default:
         return (
           <div className="text-center py-8 text-slate-500 dark:text-slate-400">

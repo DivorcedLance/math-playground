@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import Fraction from 'fraction.js';
-import { fractionToString } from '../utils/fractions';
+import { MathText } from '../components';
+import { fractionToLatex } from '../utils/fractions';
 
 interface PolyResult {
   steps: string[];
   result: Fraction;
+}
+
+function fractionOrOneLatex(value: Fraction): string {
+  return fractionToLatex({ numerator: Number(value.s * value.n), denominator: Number(value.d) });
 }
 
 export const PolynomialEvalTool: React.FC = () => {
@@ -31,10 +36,11 @@ export const PolynomialEvalTool: React.FC = () => {
       for (let i = 0; i < coeffs.length; i++) {
         const degree = coeffs.length - 1 - i;
         const coeff = coeffs[i];
+        const coeffLatex = fractionOrOneLatex(coeff as any);
 
         if (degree === 0) {
           value = value.add(coeff) as Fraction;
-          steps.push(`+ ${fractionToString(coeff as any)}`);
+          steps.push(`+ ${coeffLatex}`);
         } else {
           let xPower = new Fraction(1);
           for (let p = 0; p < degree; p++) {
@@ -44,9 +50,9 @@ export const PolynomialEvalTool: React.FC = () => {
           value = value.add(term) as Fraction;
 
           if (degree === 1) {
-            steps.push(`+ ${fractionToString(coeff as any)} × ${fractionToString(x as any)}`);
+            steps.push(`+ ${coeffLatex}\\cdot ${fractionToLatex({ numerator: Number(x.s * x.n), denominator: Number(x.d) })}`);
           } else {
-            steps.push(`+ ${fractionToString(coeff as any)} × ${fractionToString(x as any)}^${degree}`);
+            steps.push(`+ ${coeffLatex}\\cdot ${fractionToLatex({ numerator: Number(x.s * x.n), denominator: Number(x.d) })}^{${degree}}`);
           }
         }
       }
@@ -64,11 +70,11 @@ export const PolynomialEvalTool: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Instructions */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+      <div className="border-2 border-blue-300 dark:border-blue-600 rounded-lg p-4">
         <p className="text-blue-900 dark:text-blue-300 font-semibold mb-2">
           Evaluación de Polinomios
         </p>
-        <p className="text-blue-800 dark:text-blue-200 text-sm">
+        <p className="text-slate-700 dark:text-slate-300 text-sm">
           Ingresa los coeficientes del polinomio de mayor a menor grado, separados por comas.
         </p>
       </div>
@@ -115,8 +121,8 @@ export const PolynomialEvalTool: React.FC = () => {
 
       {/* Error */}
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <p className="text-red-800 dark:text-red-200">
+        <div className="p-4 border-2 border-red-400 dark:border-red-600 rounded-lg">
+          <p className="text-red-700 dark:text-red-300">
             <strong>Error:</strong> {error}
           </p>
         </div>
@@ -126,13 +132,13 @@ export const PolynomialEvalTool: React.FC = () => {
       {result && (
         <div className="space-y-4">
           {/* Steps */}
-          <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+          <div className="p-6 rounded-lg border border-slate-300 dark:border-slate-700">
             <h3 className="font-semibold text-slate-900 dark:text-white mb-3">
               Evaluación
             </h3>
-            <div className="space-y-2 font-mono text-slate-700 dark:text-slate-300 text-sm">
+            <div className="space-y-2 text-slate-700 dark:text-slate-300 text-sm">
               {result.steps.map((step, i) => (
-                <p key={i}>{step}</p>
+                <MathText key={i} expression={step} className="block text-slate-900 dark:text-white" />
               ))}
             </div>
           </div>
@@ -143,9 +149,18 @@ export const PolynomialEvalTool: React.FC = () => {
               Resultado
             </h3>
             <div className="p-4 bg-white dark:bg-slate-900 rounded border border-green-300 dark:border-green-700">
-              <p className="font-mono text-slate-900 dark:text-white text-lg">
-                P({fractionToString(new Fraction(xValue) as any)}) = {fractionToString(result.result as any)}
-              </p>
+                {(() => {
+                  const xFraction = new Fraction(xValue);
+                  const xLatex = fractionToLatex({ numerator: Number(xFraction.s * xFraction.n), denominator: Number(xFraction.d) });
+                  const resultLatex = fractionToLatex({ numerator: Number(result.result.s * result.result.n), denominator: Number(result.result.d) });
+
+                  return (
+                    <MathText
+                      expression={`P(${xLatex}) = ${resultLatex}`}
+                      className="block text-lg text-slate-900 dark:text-white"
+                    />
+                  );
+                })()}
             </div>
           </div>
         </div>

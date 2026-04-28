@@ -121,20 +121,35 @@ export function subtractPolynomials(p1: Polynomial, p2: Polynomial): Polynomial 
  * Convierte un término a string
  */
 export function termToString(term: Term): string {
-  let result = term.coefficient.toFraction();
-  
+  // Return a LaTeX-friendly representation for a single term's magnitude and variables.
+  const coeff = term.coefficient as Fraction;
+  const n = Number(coeff.n);
+  const d = Number(coeff.d);
+
   const variables = Array.from(term.variables.entries())
     .sort()
-    .map(([v, p]) => (p > 1 ? `${v}^${p}` : v))
+    .map(([v, p]) => (p > 1 ? `${v}^{${p}}` : v))
     .join('');
 
+  let coeffStr = '';
+
   if (variables) {
-    result += variables;
-  } else if (result === '1') {
-    result = '1';
+    if (d === 1) {
+      if (Math.abs(n) === 1) {
+        // Coefficient 1 or -1 is implicit when variables exist
+        coeffStr = `${Math.abs(n) === 1 ? '' : String(Math.abs(n))}`;
+      } else {
+        coeffStr = String(Math.abs(n));
+      }
+    } else {
+      coeffStr = `\\frac{${Math.abs(n)}}{${d}}`;
+    }
+    return coeffStr + variables;
   }
 
-  return result;
+  // Constant term
+  if (d === 1) return String(n);
+  return `\\frac{${n}}{${d}}`;
 }
 
 /**
@@ -142,15 +157,22 @@ export function termToString(term: Term): string {
  */
 export function polynomialToString(poly: Polynomial): string {
   if (poly.terms.length === 0) return '0';
+  const parts: string[] = [];
 
-  return poly.terms
-    .map((term, i) => {
-      const str = termToString(term);
-      if (i === 0) return str;
-      const sign = Number(term.coefficient.s) > 0 ? '+ ' : '- ';
-      const absN = Math.abs(Number(term.coefficient.n));
-      const d = Number(term.coefficient.d);
-      return sign + absN + '/' + d + ' ' + str.slice(str.search(/[a-z]/i));
-    })
-    .join(' ');
+  poly.terms.forEach((term, i) => {
+    const coeff = term.coefficient as Fraction;
+    const sign = Number(coeff.s) < 0 ? '-' : '+';
+    const termBody = termToString(term);
+
+    if (i === 0) {
+      // First term: include sign only if negative
+      parts.push(Number(coeff.s) < 0 ? `-${termBody}` : termBody);
+      return;
+    }
+
+    parts.push(`${sign} ${termBody}`);
+  });
+
+  // Join into LaTeX-friendly expression
+  return parts.join(' ');
 }
