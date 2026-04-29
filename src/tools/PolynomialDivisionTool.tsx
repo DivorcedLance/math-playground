@@ -321,7 +321,7 @@ export const PolynomialDivisionTool: React.FC = () => {
                     <td className="border-r-2 border-slate-600 dark:border-slate-400 p-3 text-center font-semibold text-red-600 dark:text-red-400">
                       {fractionToLatex(result.horner.rowLabels[rowIdx])}
                     </td>
-                    {Array.from({ length: rowIdx }).map((_, blankIdx) => (
+                    {Array.from({ length: rowIdx + 1 }).map((_, blankIdx) => (
                       <td key={`blank-${rowIdx}-${blankIdx}`} className="p-3"></td>
                     ))}
                     {row.map((cell, colIdx) => (
