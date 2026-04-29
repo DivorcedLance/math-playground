@@ -76,10 +76,12 @@ export const PolynomialEvalTool: React.FC = () => {
         const degree = coefficients.length - 1 - i;
         const coeff = coefficients[i];
         const coeffLatex = fractionOrOneLatex(coeff);
+        const coeffNum = Number(coeff.n);
+        const sign = coeffNum < 0 ? '' : '+ ';
 
         if (degree === 0) {
           value = value.add(coeff) as Fraction;
-          steps.push(`+ ${coeffLatex}`);
+          steps.push(`${sign}${coeffLatex}`);
         } else {
           let xPower = new Fraction(1);
           for (let p = 0; p < degree; p++) {
@@ -89,9 +91,9 @@ export const PolynomialEvalTool: React.FC = () => {
           value = value.add(term) as Fraction;
 
           if (degree === 1) {
-            steps.push(`+ ${coeffLatex}\\cdot ${fractionToLatex({ numerator: Number(x.s * x.n), denominator: Number(x.d) })}`);
+            steps.push(`${sign}${coeffLatex}\\cdot ${fractionToLatex({ numerator: Number(x.s * x.n), denominator: Number(x.d) })}`);
           } else {
-            steps.push(`+ ${coeffLatex}\\cdot ${fractionToLatex({ numerator: Number(x.s * x.n), denominator: Number(x.d) })}^{${degree}}`);
+            steps.push(`${sign}${coeffLatex}\\cdot ${fractionToLatex({ numerator: Number(x.s * x.n), denominator: Number(x.d) })}^{${degree}}`);
           }
         }
       }
@@ -153,15 +155,6 @@ export const PolynomialEvalTool: React.FC = () => {
       <div className="flex gap-2">
         <button
           onClick={() => {
-            setCoefficients([...coefficients, new Fraction(0)]);
-            setResult(null);
-          }}
-          className="flex-1 px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-400 dark:hover:bg-slate-600 transition-colors font-semibold text-sm"
-        >
-          + Grado
-        </button>
-        <button
-          onClick={() => {
             if (coefficients.length > 1) {
               setCoefficients(coefficients.slice(0, -1));
               setResult(null);
@@ -171,6 +164,15 @@ export const PolynomialEvalTool: React.FC = () => {
           className="flex-1 px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-400 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold text-sm"
         >
           - Grado
+        </button>
+        <button
+          onClick={() => {
+            setCoefficients([...coefficients, new Fraction(0)]);
+            setResult(null);
+          }}
+          className="flex-1 px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-400 dark:hover:bg-slate-600 transition-colors font-semibold text-sm"
+        >
+          + Grado
         </button>
       </div>
 
@@ -221,10 +223,8 @@ export const PolynomialEvalTool: React.FC = () => {
             <h3 className="font-semibold text-slate-900 dark:text-white mb-3">
               Evaluación paso a paso
             </h3>
-            <div className="space-y-1 text-slate-700 dark:text-slate-300 text-sm">
-              {result.steps.map((step, i) => (
-                <MathText key={i} expression={step} className="block text-slate-900 dark:text-white" />
-              ))}
+            <div className="text-slate-700 dark:text-slate-300 text-sm">
+              <MathText expression={result.steps.join(' ')} className="block text-slate-900 dark:text-white" />
             </div>
           </div>
 

@@ -272,15 +272,6 @@ export const PolynomialDivisionTool: React.FC = () => {
       <div className="flex gap-2">
         <button
           onClick={() => {
-            setDividendCoeffs([...dividendCoeffs, new Fraction(0)]);
-            setResult(null);
-          }}
-          className="flex-1 px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-400 dark:hover:bg-slate-600 transition-colors font-semibold text-sm"
-        >
-          + Grado Dividendo
-        </button>
-        <button
-          onClick={() => {
             if (dividendCoeffs.length > 1) {
               setDividendCoeffs(dividendCoeffs.slice(0, -1));
               setResult(null);
@@ -290,6 +281,15 @@ export const PolynomialDivisionTool: React.FC = () => {
           className="flex-1 px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-400 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold text-sm"
         >
           - Grado Dividendo
+        </button>
+        <button
+          onClick={() => {
+            setDividendCoeffs([...dividendCoeffs, new Fraction(0)]);
+            setResult(null);
+          }}
+          className="flex-1 px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-400 dark:hover:bg-slate-600 transition-colors font-semibold text-sm"
+        >
+          + Grado Dividendo
         </button>
       </div>
 
@@ -325,15 +325,6 @@ export const PolynomialDivisionTool: React.FC = () => {
       <div className="flex gap-2">
         <button
           onClick={() => {
-            setDivisorCoeffs([...divisorCoeffs, new Fraction(0)]);
-            setResult(null);
-          }}
-          className="flex-1 px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-400 dark:hover:bg-slate-600 transition-colors font-semibold text-sm"
-        >
-          + Grado Divisor
-        </button>
-        <button
-          onClick={() => {
             if (divisorCoeffs.length > 1) {
               setDivisorCoeffs(divisorCoeffs.slice(0, -1));
               setResult(null);
@@ -343,6 +334,15 @@ export const PolynomialDivisionTool: React.FC = () => {
           className="flex-1 px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-400 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold text-sm"
         >
           - Grado Divisor
+        </button>
+        <button
+          onClick={() => {
+            setDivisorCoeffs([...divisorCoeffs, new Fraction(0)]);
+            setResult(null);
+          }}
+          className="flex-1 px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-400 dark:hover:bg-slate-600 transition-colors font-semibold text-sm"
+        >
+          + Grado Divisor
         </button>
       </div>
 
