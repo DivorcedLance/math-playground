@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Navigation } from './Navigation';
 import './Layout.css';
 
@@ -9,7 +9,6 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children, currentTool }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -17,14 +16,15 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentTool }) => {
       {/* Sidebar */}
       <aside
         className={`
-          ${sidebarOpen ? 'w-64' : 'w-0'} 
-          ${mobileMenuOpen ? 'w-64' : 'w-0 md:w-64'}
-          transition-all duration-300 ease-in-out
+          ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+          md:translate-x-0
+          w-64
+          transition-transform duration-300 ease-in-out
           bg-slate-50 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800
           fixed md:static h-full z-40 overflow-hidden
         `}
       >
-        <Navigation currentTool={currentTool} />
+        <Navigation currentTool={currentTool} onNavigate={() => setMobileMenuOpen(false)} />
       </aside>
 
       {/* Main content */}
@@ -32,21 +32,18 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentTool }) => {
         {/* Header */}
         <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-4 flex items-center justify-between">
           <button
-            onClick={() => {
-              setSidebarOpen(!sidebarOpen);
-              setMobileMenuOpen(!mobileMenuOpen);
-            }}
-            className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
             aria-label="Toggle sidebar"
           >
-            {sidebarOpen || mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            <Menu size={24} />
           </button>
           
           <h1 className="text-2xl font-bold text-primary-700 dark:text-primary-400">
             Math Playground
           </h1>
           
-          <div className="w-6" /> {/* Spacer for centering */}
+          <div className="w-6 md:hidden" /> {/* Spacer for centering on mobile */}
         </header>
 
         {/* Page content */}

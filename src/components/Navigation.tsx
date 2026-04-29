@@ -5,9 +5,10 @@ import { createAppHref } from '../utils/routing'
 
 interface NavigationProps {
   currentTool?: string;
+  onNavigate?: () => void;
 }
 
-export const Navigation: React.FC<NavigationProps> = ({ currentTool }) => {
+export const Navigation: React.FC<NavigationProps> = ({ currentTool, onNavigate }) => {
   return (
     <nav className="h-full flex flex-col overflow-y-auto py-6">
       {/* Logo/Home */}
@@ -24,6 +25,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentTool }) => {
       <div className="px-3 mb-4">
         <a
           href={createAppHref('/')}
+          onClick={onNavigate}
           className={`block px-4 py-2 rounded-lg text-sm transition-colors ${
             !currentTool
               ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 font-semibold'
@@ -38,6 +40,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentTool }) => {
       <div className="px-3 mb-8">
         <a
           href={createAppHref('/formulas')}
+          onClick={onNavigate}
           className={`block px-4 py-2 rounded-lg text-sm transition-colors ${
             currentTool === 'formulas'
               ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 font-semibold'
@@ -70,6 +73,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentTool }) => {
                   <a
                     key={tool.id}
                     href={createAppHref(`/tool/${tool.id}`)}
+                    onClick={onNavigate}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors ${
                       currentTool === tool.id
                         ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 font-semibold'
