@@ -69,27 +69,16 @@ export const SystemsEquationsTool: React.FC = () => {
       ]);
 
       // Calculate determinant of 3x3
-      const detA =
-        (matrix[0][0].mul(
-          matrix[1][1].mul(matrix[2][2]) as Fraction
-        ).sub(
-          matrix[1][2].mul(matrix[2][1]) as Fraction
-        ) as Fraction).sub(
-          matrix[0][1].mul(
-            matrix[1][0].mul(matrix[2][2]) as Fraction
-          ).sub(
-            matrix[1][2].mul(matrix[2][0]) as Fraction
-          ) as Fraction
-        ) as Fraction
-      ).add(
-        matrix[0][2].mul(
-          matrix[1][0].mul(matrix[2][1]) as Fraction
-        ).sub(
-          matrix[1][1].mul(matrix[2][0]) as Fraction
-        ) as Fraction
-      ) as Fraction;
+      const minor1 = (matrix[1][1].mul(matrix[2][2]) as Fraction).sub(matrix[1][2].mul(matrix[2][1]) as Fraction) as Fraction;
+      const minor2 = (matrix[1][0].mul(matrix[2][2]) as Fraction).sub(matrix[1][2].mul(matrix[2][0]) as Fraction) as Fraction;
+      const minor3 = (matrix[1][0].mul(matrix[2][1]) as Fraction).sub(matrix[1][1].mul(matrix[2][0]) as Fraction) as Fraction;
 
-      if (Number(detA.n) === 0) {
+      const detA = (matrix[0][0].mul(minor1) as Fraction)
+        .sub(matrix[0][1].mul(minor2) as Fraction) as Fraction;
+      const detCofactor = (matrix[0][2].mul(minor3) as Fraction) as Fraction;
+      const det = (detA.add(detCofactor) as Fraction) as Fraction;
+
+      if (Number(det.n) === 0) {
         setError('El sistema no tiene solución única');
         return;
       }
@@ -306,157 +295,6 @@ export const SystemsEquationsTool: React.FC = () => {
               expression={`z = ${fractionToLatex(solution.z as Fraction)}`}
               className="block text-lg text-slate-900 dark:text-white"
             />
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-        <div className="rounded-lg border px-4 py-3 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
-          Sistema 2x2: ax + by = c
-        </div>
-        <div className="rounded-lg border px-4 py-3 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
-          Se resuelve con regla de Cramer
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        {/* Equation 1 */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-2">
-            Ecuación 1: ax + by = c
-          </label>
-          <div className="grid grid-cols-3 gap-2">
-            <input
-              type="text"
-              value={eq1a}
-              onChange={(e) => setEq1a(e.target.value)}
-              placeholder="a"
-              className="px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono"
-            />
-            <input
-              type="text"
-              value={eq1b}
-              onChange={(e) => setEq1b(e.target.value)}
-              placeholder="b"
-              className="px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono"
-            />
-            <input
-              type="text"
-              value={eq1c}
-              onChange={(e) => setEq1c(e.target.value)}
-              placeholder="c"
-              className="px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono"
-            />
-          </div>
-        </div>
-
-        {/* Equation 2 */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-2">
-            Ecuación 2: ax + by = c
-          </label>
-          <div className="grid grid-cols-3 gap-2">
-            <input
-              type="text"
-              value={eq2a}
-              onChange={(e) => setEq2a(e.target.value)}
-              placeholder="a"
-              className="px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono"
-            />
-            <input
-              type="text"
-              value={eq2b}
-              onChange={(e) => setEq2b(e.target.value)}
-              placeholder="b"
-              className="px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono"
-            />
-            <input
-              type="text"
-              value={eq2c}
-              onChange={(e) => setEq2c(e.target.value)}
-              placeholder="c"
-              className="px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Solve Button */}
-      <button
-        onClick={handleSolve}
-        className="w-full px-4 py-3 bg-primary-600 dark:bg-primary-700 text-white rounded-lg hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors font-semibold"
-      >
-        Resolver Sistema
-      </button>
-
-      {/* Error */}
-      {error && (
-        <div className="p-4 border-2 border-red-400 dark:border-red-600 rounded-lg">
-          <p className="text-red-700 dark:text-red-300">
-            <strong>Error:</strong> {error}
-          </p>
-        </div>
-      )}
-
-      {/* Solution */}
-      {solution && (
-        <div className="space-y-3">
-          <div className="p-6 border-2 border-green-300 dark:border-green-600 rounded-lg">
-            <div className="space-y-2">
-              <div>
-                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1">
-                  x
-                </p>
-                <MathText
-                  expression={`x = ${fractionToLatex(solution.x)}`}
-                  className="block text-lg text-slate-900 dark:text-white"
-                />
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1">
-                  y
-                </p>
-                <MathText
-                  expression={`y = ${fractionToLatex(solution.y)}`}
-                  className="block text-lg text-slate-900 dark:text-white"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Verification */}
-          <div className="p-4 rounded-lg border border-slate-300 dark:border-slate-700">
-            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">
-              Verificación
-            </p>
-            <div className="space-y-1 text-sm text-slate-700 dark:text-slate-300">
-              {(() => {
-                const a1 = new Fraction(eq1a);
-                const b1 = new Fraction(eq1b);
-                const check1 = (a1.mul(solution.x) as Fraction).add(b1.mul(solution.y) as Fraction);
-                const a2 = new Fraction(eq2a);
-                const b2 = new Fraction(eq2b);
-                const check2 = (a2.mul(solution.x) as Fraction).add(b2.mul(solution.y) as Fraction);
-
-                return (
-                  <>
-                    <MathText
-                      expression={`${fractionToLatex(a1)} \\cdot ${fractionToLatex(solution.x)} + ${fractionToLatex(b1)} \\cdot ${fractionToLatex(solution.y)} = ${fractionToLatex(check1)} \\checkmark`}
-                      className="block"
-                    />
-                    <MathText
-                      expression={`${fractionToLatex(a2)} \\cdot ${fractionToLatex(solution.x)} + ${fractionToLatex(b2)} \\cdot ${fractionToLatex(solution.y)} = ${fractionToLatex(check2)} \\checkmark`}
-                      className="block"
-                    />
-                  </>
-                );
-              })()}
-            </div>
           </div>
         </div>
       )}
