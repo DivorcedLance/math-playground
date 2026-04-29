@@ -343,7 +343,7 @@ export const PolynomialDivisionTool: React.FC = () => {
                   </td>
                   {Array.from({ length: result.numCols - 1 }).map((_, i) => {
                     const value = result.grid[0][i + 1];
-                    const isSeparator = i === result.separatorIndex;
+                    const isSeparator = i === result.separatorIndex - 1;
                     return (
                       <td
                         key={`top-${i}`}
@@ -368,7 +368,7 @@ export const PolynomialDivisionTool: React.FC = () => {
                         {rowNumber <= result.divisorLen && leftValue ? fractionToLatex(leftValue) : ''}
                       </td>
                       {row.slice(1).map((cell, colIdx) => {
-                        const isSeparator = colIdx === result.separatorIndex;
+                        const isSeparator = colIdx === result.separatorIndex - 1;
                         return (
                           <td
                             key={`cell-${rowIdx}-${colIdx}`}
@@ -387,7 +387,7 @@ export const PolynomialDivisionTool: React.FC = () => {
                 <tr>
                   <td className="border-t-2 border-r-2 border-slate-600 dark:border-slate-400 p-3"></td>
                   {result.bottomRow.slice(1).map((value, i) => {
-                    const isSeparator = i === result.separatorIndex;
+                    const isSeparator = i === result.separatorIndex - 1;
                     return (
                       <td
                         key={`bottom-${i}`}
