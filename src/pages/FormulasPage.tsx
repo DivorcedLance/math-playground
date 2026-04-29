@@ -393,7 +393,7 @@ export const FormulasPage: React.FC = () => {
                     <th className="border border-slate-200 dark:border-slate-700 px-4 py-2 text-left font-semibold text-slate-900 dark:text-white">Exponente</th>
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
                       <th key={n} className="border border-slate-200 dark:border-slate-700 px-4 py-2 text-center font-semibold text-slate-900 dark:text-white">
-                        {n}
+                        <MathText expression={`2^{${n}}`} className="text-slate-900 dark:text-white" />
                       </th>
                     ))}
                   </tr>
@@ -422,7 +422,7 @@ export const FormulasPage: React.FC = () => {
                     <th className="border border-slate-200 dark:border-slate-700 px-4 py-2 text-left font-semibold text-slate-900 dark:text-white">Exponente</th>
                     {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
                       <th key={n} className="border border-slate-200 dark:border-slate-700 px-4 py-2 text-center font-semibold text-slate-900 dark:text-white">
-                        {n}
+                        <MathText expression={`3^{${n}}`} className="text-slate-900 dark:text-white" />
                       </th>
                     ))}
                   </tr>
