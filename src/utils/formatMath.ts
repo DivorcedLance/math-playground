@@ -12,7 +12,7 @@ export function preferFractions(input: string): string {
 
   // Convert simple a/b patterns into LaTeX \frac{a}{b}
   // This targets alphanumeric tokens and grouped parentheses/braces
-  s = s.replace(/([0-9A-Za-z\)\}\^\+\-\._\(\{]+)\/([0-9A-Za-z\(\{\^\+\-\._\)\}]+)/g, "\\frac{$1}{$2}");
+  s = s.replace(/([0-9A-Za-z)}^+\-._({]+)\/([0-9A-Za-z({^+\-._)}]+)/g, "\\frac{$1}{$2}");
 
   return s;
 }

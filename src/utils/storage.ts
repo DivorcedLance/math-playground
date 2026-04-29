@@ -4,7 +4,7 @@
 
 const STORAGE_PREFIX = 'math-playground:';
 
-export function setLocalStorage(key: string, value: any): void {
+export function setLocalStorage(key: string, value: unknown): void {
   try {
     const serialized = JSON.stringify(value);
     localStorage.setItem(`${STORAGE_PREFIX}${key}`, serialized);
@@ -13,7 +13,7 @@ export function setLocalStorage(key: string, value: any): void {
   }
 }
 
-export function getLocalStorage<T = any>(key: string, defaultValue?: T): T | null {
+export function getLocalStorage<T = unknown>(key: string, defaultValue?: T): T | null {
   try {
     const item = localStorage.getItem(`${STORAGE_PREFIX}${key}`);
     return item ? JSON.parse(item) : defaultValue ?? null;

@@ -135,8 +135,9 @@ export const RationalizationTool: React.FC = () => {
         artifice,
         caseType,
       });
-    } catch (err: any) {
-      setError(err.message || 'Error al racionalizar');
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message || 'Error al racionalizar');
       setResult(null);
     }
   };

@@ -63,8 +63,9 @@ export const LinearEquationsTool: React.FC = () => {
 
       setSteps(newSteps);
       setSolution(toLatexFraction(x));
-    } catch (err: any) {
-      setSolution('Error: ' + err.message);
+    } catch (err: unknown) {
+      const error = err as Error;
+      setSolution('Error: ' + error.message);
       setSteps([]);
     }
   };

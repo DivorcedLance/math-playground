@@ -94,8 +94,9 @@ export const QuadraticEquationsTool: React.FC = () => {
         root2,
         formulaLatex,
       });
-    } catch (err: any) {
-      setError(err.message || 'Error al resolver la ecuación');
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message || 'Error al resolver la ecuación');
       setSolution(null);
     }
   };

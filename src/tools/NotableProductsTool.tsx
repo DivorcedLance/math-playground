@@ -37,8 +37,9 @@ export const NotableProductsTool: React.FC = () => {
       setError('');
       const expanded = expandExpression(expression);
       setResult(polynomialToString(expanded));
-    } catch (err: any) {
-      setError(err.message || 'Error al expandir la expresión');
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message || 'Error al expandir la expresión');
       setResult('');
     }
   };

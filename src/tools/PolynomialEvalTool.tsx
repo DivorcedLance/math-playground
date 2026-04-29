@@ -87,7 +87,7 @@ export const PolynomialEvalTool: React.FC = () => {
       for (let i = 0; i < coefficients.length; i++) {
         const degree = coefficients.length - 1 - i;
         const coeff = coefficients[i];
-        const coeffLatex = fractionOrOneLatex(coeff as any);
+        const coeffLatex = fractionOrOneLatex(coeff);
 
         if (degree === 0) {
           value = value.add(coeff) as Fraction;
@@ -97,7 +97,7 @@ export const PolynomialEvalTool: React.FC = () => {
           for (let p = 0; p < degree; p++) {
             xPower = xPower.mul(x) as Fraction;
           }
-          let term = coeff.mul(xPower) as Fraction;
+          const term = coeff.mul(xPower) as Fraction;
           value = value.add(term) as Fraction;
 
           if (degree === 1) {
@@ -250,7 +250,7 @@ export const PolynomialEvalTool: React.FC = () => {
             </h3>
             <div className="p-4 bg-white dark:bg-slate-900 rounded border border-green-300 dark:border-green-700">
                 <MathText
-                  expression={`P(${fractionToLatex({ numerator: Number(new Fraction(xValue).s * new Fraction(xValue).n), denominator: Number(new Fraction(xValue).d) })}) = ${fractionOrOneLatex(result.result as any)}`}
+                  expression={`P(${fractionToLatex({ numerator: Number(new Fraction(xValue).s * new Fraction(xValue).n), denominator: Number(new Fraction(xValue).d) })}) = ${fractionOrOneLatex(result.result)}`}
                   className="block text-xl text-slate-900 dark:text-white"
                 />
             </div>

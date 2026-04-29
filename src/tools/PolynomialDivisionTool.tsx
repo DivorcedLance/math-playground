@@ -16,8 +16,6 @@ interface DivisionResult {
 }
 
 export const PolynomialDivisionTool: React.FC = () => {
-  const [dividendDegree, setDividendDegree] = useState<number>(3);
-  const [divisorDegree, setDivisorDegree] = useState<number>(1);
   const [dividendCoeffs, setDividendCoeffs] = useState<Fraction[]>([
     new Fraction(1),
     new Fraction(0),
@@ -59,7 +57,7 @@ export const PolynomialDivisionTool: React.FC = () => {
       setResult(null);
 
       // Remove leading zeros from divisor
-      let divisor = [...divisorCoeffs];
+      const divisor = [...divisorCoeffs];
       while (divisor.length > 1 && Number(divisor[0].n) === 0) {
         divisor.shift();
       }
@@ -101,8 +99,9 @@ export const PolynomialDivisionTool: React.FC = () => {
         remainder,
         steps: [], // Steps generation can be added later
       });
-    } catch (err: any) {
-      setError(err.message || 'Error en la división');
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message || 'Error en la división');
       setResult(null);
     }
   };

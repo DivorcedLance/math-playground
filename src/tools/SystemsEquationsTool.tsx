@@ -61,8 +61,9 @@ export const SystemsEquationsTool: React.FC = () => {
       const y = (detY.div(det) as Fraction);
 
       setSolution({ x, y });
-    } catch (err: any) {
-      setError(err.message || 'Error al resolver');
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message || 'Error al resolver');
       setSolution(null);
     }
   };
@@ -98,8 +99,9 @@ export const SystemsEquationsTool: React.FC = () => {
       const z = determinant3x3(matrixZ).div(det) as Fraction;
 
       setSolution({ x, y, z });
-    } catch (err: any) {
-      setError(err.message || 'Error en cálculo de determinante');
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message || 'Error en cálculo de determinante');
       setSolution(null);
     }
   };
