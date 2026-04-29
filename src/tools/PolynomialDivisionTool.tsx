@@ -33,7 +33,8 @@ function polynomialToLatex(coeffs: Fraction[]): string {
 interface HornerGrid {
   normalizedDivisor: Fraction[];
   leadingCoeff: Fraction;
-  rows: (Fraction | null)[][];
+  rowLabels: Fraction[];
+  productRows: Fraction[][];
   finalRow: Fraction[];
 }
 
@@ -135,20 +136,10 @@ export const PolynomialDivisionTool: React.FC = () => {
       const remainder = out.slice(quotientLen);
       const quotient = quotientNorm.map((q) => (q.div(leading) as Fraction));
 
-      const rows: (Fraction | null)[][] = dTail.map(() =>
-        Array.from({ length: n + 1 }, () => null as Fraction | null)
+      const rowLabels = dTail.map((d) => (d.mul(-1) as Fraction));
+      const productRows = quotientNorm.map((q) =>
+        dTail.map((d) => (d.mul(q).mul(-1) as Fraction))
       );
-
-      // Fill products top-to-bottom by synthetic step (quotient coefficient),
-      // matching the hand-written Horner grid layout.
-      for (let step = 0; step < quotientLen; step++) {
-        for (let j = 0; j < m; j++) {
-          const col = step + 1 + j;
-          if (step < rows.length && col < dividend.length) {
-            rows[step][col] = (dTail[j].mul(quotientNorm[step]).mul(-1) as Fraction);
-          }
-        }
-      }
 
       setResult({
         quotient,
@@ -159,7 +150,8 @@ export const PolynomialDivisionTool: React.FC = () => {
         horner: {
           normalizedDivisor,
           leadingCoeff: leading,
-          rows,
+          rowLabels,
+          productRows,
           finalRow: out,
         },
       });
@@ -324,20 +316,24 @@ export const PolynomialDivisionTool: React.FC = () => {
                   ))}
                 </tr>
 
-                {result.horner.rows.map((row, rowIdx) => (
+                {result.horner.productRows.map((row, rowIdx) => (
                   <tr key={`row-${rowIdx}`}>
                     <td className="border-r-2 border-slate-600 dark:border-slate-400 p-3 text-center font-semibold text-red-600 dark:text-red-400">
-                      {fractionToLatex(result.quotientNorm[rowIdx])}
+                      {fractionToLatex(result.horner.rowLabels[rowIdx])}
                     </td>
+                    {Array.from({ length: rowIdx }).map((_, blankIdx) => (
+                      <td key={`blank-${rowIdx}-${blankIdx}`} className="p-3"></td>
+                    ))}
                     {row.map((cell, colIdx) => (
                       <td
                         key={`cell-${rowIdx}-${colIdx}`}
-                        className={`p-3 text-center text-slate-800 dark:text-slate-200 ${
-                          colIdx === result.quotient.length - 1 ? 'border-r-2 border-dashed border-r-slate-500 dark:border-r-slate-400' : ''
-                        }`}
+                        className="p-3 text-center text-slate-800 dark:text-slate-200"
                       >
                         {cell ? fractionToLatex(cell) : ''}
                       </td>
+                    ))}
+                    {Array.from({ length: Math.max(0, result.horner.finalRow.length - row.length - rowIdx) }).map((_, tailIdx) => (
+                      <td key={`tail-${rowIdx}-${tailIdx}`} className="p-3"></td>
                     ))}
                   </tr>
                 ))}
