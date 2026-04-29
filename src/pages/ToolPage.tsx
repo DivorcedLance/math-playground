@@ -7,6 +7,7 @@ import { PolynomialEvalTool } from '../tools/PolynomialEvalTool';
 import { RationalizationTool } from '../tools/RationalizationTool';
 import { PolynomialDivisionTool } from '../tools/PolynomialDivisionTool';
 import { SystemsEquationsTool } from '../tools/SystemsEquationsTool';
+import { createAppHref } from '../utils/routing'
 
 interface ToolPageProps {
   toolId: string;
@@ -25,7 +26,7 @@ export const ToolPage: React.FC<ToolPageProps> = ({ toolId }) => {
           La herramienta que buscas no existe.
         </p>
         <a
-          href="/"
+          href={createAppHref('/')}
           className="px-6 py-3 bg-primary-600 dark:bg-primary-700 text-white rounded-lg hover:bg-primary-700 dark:hover:bg-primary-600"
         >
           Volver al inicio

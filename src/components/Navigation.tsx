@@ -1,6 +1,7 @@
 import React from 'react';
 import { TOOL_CATEGORIES, TOOLS } from '../utils/toolsConfig';
 import * as Icons from 'lucide-react';
+import { createAppHref } from '../utils/routing'
 
 interface NavigationProps {
   currentTool?: string;
@@ -12,7 +13,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentTool }) => {
       {/* Logo/Home */}
       <div className="px-6 mb-8">
         <a
-          href="/"
+          href={createAppHref('/')}
           className="text-xl font-bold text-primary-700 dark:text-primary-400 hover:text-primary-600"
         >
           🧮 Math
@@ -22,7 +23,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentTool }) => {
       {/* Home link */}
       <div className="px-3 mb-4">
         <a
-          href="/"
+          href={createAppHref('/')}
           className={`block px-4 py-2 rounded-lg text-sm transition-colors ${
             !currentTool
               ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 font-semibold'
@@ -36,7 +37,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentTool }) => {
       {/* Formulas section */}
       <div className="px-3 mb-8">
         <a
-          href="/formulas"
+          href={createAppHref('/formulas')}
           className={`block px-4 py-2 rounded-lg text-sm transition-colors ${
             currentTool === 'formulas'
               ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 font-semibold'
@@ -68,7 +69,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentTool }) => {
                 return (
                   <a
                     key={tool.id}
-                    href={`/tool/${tool.id}`}
+                    href={createAppHref(`/tool/${tool.id}`)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors ${
                       currentTool === tool.id
                         ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 font-semibold'

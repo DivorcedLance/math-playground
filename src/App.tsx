@@ -5,19 +5,22 @@ import { Layout } from './components'
 import { HomePage } from './pages/HomePage'
 import { FormulasPage } from './pages/FormulasPage'
 import { ToolPage } from './pages/ToolPage'
+import { createAppHref, getAppPathname } from './utils/routing'
 
 function App() {
-  const [path, setPath] = useState<string>(window.location.pathname)
+  const [path, setPath] = useState<string>(() => getAppPathname())
 
   useEffect(() => {
-    const handlePopState = () => setPath(window.location.pathname)
+    const handlePopState = () => setPath(getAppPathname())
     window.addEventListener('popstate', handlePopState)
     return () => window.removeEventListener('popstate', handlePopState)
   }, [])
 
   const navigate = (newPath: string) => {
-    window.history.pushState({}, '', newPath)
-    setPath(newPath)
+    const url = new URL(newPath, window.location.origin)
+    const relativePath = getAppPathname(url.pathname)
+    window.history.pushState({}, '', `${createAppHref(relativePath)}${url.search}${url.hash}`)
+    setPath(relativePath)
   }
 
   // Inject navigate into window for link clicks
@@ -26,7 +29,7 @@ function App() {
       const target = (e.target as HTMLElement).closest('a')
       if (target?.href && target.hostname === window.location.hostname) {
         e.preventDefault()
-        navigate(target.pathname + target.search)
+        navigate(target.href)
       }
     }
 

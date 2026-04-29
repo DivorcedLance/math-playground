@@ -1,6 +1,7 @@
 import React from 'react';
 import { TOOL_CATEGORIES, TOOLS } from '../utils/toolsConfig';
 import * as Icons from 'lucide-react';
+import { createAppHref } from '../utils/routing'
 
 export const HomePage: React.FC = () => {
   return (
@@ -15,13 +16,13 @@ export const HomePage: React.FC = () => {
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
           <a
-            href="/formulas"
+            href={createAppHref('/formulas')}
             className="px-6 py-3 bg-secondary-600 dark:bg-secondary-700 text-white rounded-lg hover:bg-secondary-700 dark:hover:bg-secondary-600 transition-colors font-semibold"
           >
             📊 Ver Fórmulas
           </a>
           <a
-            href="/tool/notable-products"
+            href={createAppHref('/tool/notable-products')}
             className="px-6 py-3 bg-primary-600 dark:bg-primary-700 text-white rounded-lg hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors font-semibold"
           >
             🚀 Explorar Herramientas
@@ -88,7 +89,7 @@ export const HomePage: React.FC = () => {
                   return (
                     <a
                       key={tool.id}
-                      href={`/tool/${tool.id}`}
+                      href={createAppHref(`/tool/${tool.id}`)}
                       className="p-4 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-primary-400 dark:hover:border-primary-600 hover:shadow-md transition-all group"
                     >
                       <div className="flex items-start gap-3">
