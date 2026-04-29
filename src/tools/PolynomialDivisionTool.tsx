@@ -39,6 +39,7 @@ interface HornerGrid {
 
 interface DivisionResult {
   quotient: Fraction[];
+  quotientNorm: Fraction[];
   remainder: Fraction[];
   quotientLatex: string;
   remainderLatex: string;
@@ -151,6 +152,7 @@ export const PolynomialDivisionTool: React.FC = () => {
 
       setResult({
         quotient,
+        quotientNorm,
         remainder,
         quotientLatex: polynomialToLatex(quotient),
         remainderLatex: polynomialToLatex(remainder),
@@ -325,7 +327,7 @@ export const PolynomialDivisionTool: React.FC = () => {
                 {result.horner.rows.map((row, rowIdx) => (
                   <tr key={`row-${rowIdx}`}>
                     <td className="border-r-2 border-slate-600 dark:border-slate-400 p-3 text-center font-semibold text-red-600 dark:text-red-400">
-                      {fractionToLatex((result.horner.normalizedDivisor[rowIdx + 1].mul(-1) as Fraction))}
+                      {fractionToLatex(result.quotientNorm[rowIdx])}
                     </td>
                     {row.map((cell, colIdx) => (
                       <td
