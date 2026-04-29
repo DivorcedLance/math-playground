@@ -33,7 +33,6 @@ function polynomialToLatex(coeffs: Fraction[]): string {
 interface HornerGrid {
   normalizedDivisor: Fraction[];
   leadingCoeff: Fraction;
-  rowLabels: Fraction[];
   productRows: Fraction[][];
   finalRow: Fraction[];
 }
@@ -136,7 +135,6 @@ export const PolynomialDivisionTool: React.FC = () => {
       const remainder = out.slice(quotientLen);
       const quotient = quotientNorm.map((q) => (q.div(leading) as Fraction));
 
-      const rowLabels = dTail.map((d) => (d.mul(-1) as Fraction));
       const productRows = quotientNorm.map((q) =>
         dTail.map((d) => (d.mul(q).mul(-1) as Fraction))
       );
@@ -150,7 +148,6 @@ export const PolynomialDivisionTool: React.FC = () => {
         horner: {
           normalizedDivisor,
           leadingCoeff: leading,
-          rowLabels,
           productRows,
           finalRow: out,
         },
@@ -319,11 +316,8 @@ export const PolynomialDivisionTool: React.FC = () => {
                 {result.horner.productRows.map((row, rowIdx) => (
                   <tr key={`row-${rowIdx}`}>
                     <td className="border-r-2 border-slate-600 dark:border-slate-400 p-3 text-center font-semibold text-red-600 dark:text-red-400">
-                      {fractionToLatex(result.horner.rowLabels[rowIdx])}
+                      {fractionToLatex(result.quotientNorm[rowIdx])}
                     </td>
-                    {Array.from({ length: rowIdx + 1 }).map((_, blankIdx) => (
-                      <td key={`blank-${rowIdx}-${blankIdx}`} className="p-3"></td>
-                    ))}
                     {row.map((cell, colIdx) => (
                       <td
                         key={`cell-${rowIdx}-${colIdx}`}
@@ -331,9 +325,6 @@ export const PolynomialDivisionTool: React.FC = () => {
                       >
                         {cell ? fractionToLatex(cell) : ''}
                       </td>
-                    ))}
-                    {Array.from({ length: Math.max(0, result.horner.finalRow.length - row.length - rowIdx) }).map((_, tailIdx) => (
-                      <td key={`tail-${rowIdx}-${tailIdx}`} className="p-3"></td>
                     ))}
                   </tr>
                 ))}
