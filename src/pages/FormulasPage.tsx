@@ -448,17 +448,21 @@ export const FormulasPage: React.FC = () => {
               <table className="w-full text-sm border-collapse bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
                 <thead className="bg-slate-50 dark:bg-slate-800">
                   <tr>
-                    <th className="border border-slate-200 dark:border-slate-700 px-4 py-2 text-left font-semibold text-slate-900 dark:text-white">n</th>
+                    <th className="border border-slate-200 dark:border-slate-700 px-4 py-2 text-left font-semibold text-slate-900 dark:text-white">
+                      <MathText expression="n^2" className="text-slate-900 dark:text-white" />
+                    </th>
                     {Array.from({ length: 15 }, (_, i) => i + 1).map(n => (
                       <th key={n} className="border border-slate-200 dark:border-slate-700 px-4 py-2 text-center font-semibold text-slate-900 dark:text-white text-xs">
-                        {n}
+                        <MathText expression={`${n}^2`} className="text-slate-900 dark:text-white" />
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="border border-slate-200 dark:border-slate-700 px-4 py-2 font-semibold text-slate-900 dark:text-white">n²</td>
+                    <td className="border border-slate-200 dark:border-slate-700 px-4 py-2 font-semibold text-slate-900 dark:text-white">
+                      <MathText expression="n^2" className="text-slate-900 dark:text-white" />
+                    </td>
                     {Array.from({ length: 15 }, (_, i) => i + 1).map(n => (
                       <td key={n} className="border border-slate-200 dark:border-slate-700 px-4 py-2 text-center text-slate-700 dark:text-slate-300 text-xs">
                         {n * n}
@@ -477,17 +481,21 @@ export const FormulasPage: React.FC = () => {
               <table className="w-full text-sm border-collapse bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
                 <thead className="bg-slate-50 dark:bg-slate-800">
                   <tr>
-                    <th className="border border-slate-200 dark:border-slate-700 px-4 py-2 text-left font-semibold text-slate-900 dark:text-white">n</th>
+                    <th className="border border-slate-200 dark:border-slate-700 px-4 py-2 text-left font-semibold text-slate-900 dark:text-white">
+                      <MathText expression="n^3" className="text-slate-900 dark:text-white" />
+                    </th>
                     {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
                       <th key={n} className="border border-slate-200 dark:border-slate-700 px-4 py-2 text-center font-semibold text-slate-900 dark:text-white text-xs">
-                        {n}
+                        <MathText expression={`${n}^3`} className="text-slate-900 dark:text-white" />
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="border border-slate-200 dark:border-slate-700 px-4 py-2 font-semibold text-slate-900 dark:text-white">n³</td>
+                    <td className="border border-slate-200 dark:border-slate-700 px-4 py-2 font-semibold text-slate-900 dark:text-white">
+                      <MathText expression="n^3" className="text-slate-900 dark:text-white" />
+                    </td>
                     {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
                       <td key={n} className="border border-slate-200 dark:border-slate-700 px-4 py-2 text-center text-slate-700 dark:text-slate-300 text-xs">
                         {n * n * n}
@@ -509,17 +517,20 @@ export const FormulasPage: React.FC = () => {
                     <th className="border border-slate-200 dark:border-slate-700 px-4 py-2 text-left font-semibold text-slate-900 dark:text-white">Exponente</th>
                     {[-1, -2, -3, -4, -5, -6].map(n => (
                       <th key={n} className="border border-slate-200 dark:border-slate-700 px-4 py-2 text-center font-semibold text-slate-900 dark:text-white">
-                        {n}
+                        <MathText expression={`2^{(${n})}`} className="text-slate-900 dark:text-white" />
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="border border-slate-200 dark:border-slate-700 px-4 py-2 font-semibold text-slate-900 dark:text-white">2ⁿ (fracción)</td>
+                    <td className="border border-slate-200 dark:border-slate-700 px-4 py-2 font-semibold text-slate-900 dark:text-white">
+                      <MathText expression="2^n" className="text-slate-900 dark:text-white" />
+                      <span className="ml-2 text-slate-500 dark:text-slate-400">(fracción)</span>
+                    </td>
                     {[-1, -2, -3, -4, -5, -6].map(n => (
                       <td key={n} className="border border-slate-200 dark:border-slate-700 px-4 py-2 text-center text-slate-700 dark:text-slate-300 text-xs">
-                        1/{Math.pow(2, Math.abs(n))}
+                        <MathText expression={`2^{(${n})}`} className="text-slate-900 dark:text-white" />
                       </td>
                     ))}
                   </tr>
