@@ -18,32 +18,37 @@ function fractionToInput(frac: Fraction): string {
 
 function polynomialToLatex(coeffs: Fraction[]): string {
   const terms: string[] = [];
+
   for (let i = 0; i < coeffs.length; i++) {
-    const deg = coeffs.length - 1 - i;
-    const c = coeffs[i];
-    if (Number(c.n) === 0) continue;
-    const cLatex = fractionToLatex(c);
-    if (deg === 0) terms.push(cLatex);
-    else if (deg === 1) terms.push(`${cLatex}x`);
-    else terms.push(`${cLatex}x^{${deg}}`);
+    const coeff = coeffs[i];
+    if (Number(coeff.n) === 0) continue;
+
+    const power = coeffs.length - 1 - i;
+    const coeffLatex = fractionToLatex(coeff);
+
+    if (power === 0) {
+      terms.push(coeffLatex);
+    } else if (power === 1) {
+      terms.push(`${coeffLatex}x`);
+    } else {
+      terms.push(`${coeffLatex}x^{${power}}`);
+    }
   }
+
   return terms.length > 0 ? terms.join(' + ').replace(/\+ -/g, '- ') : '0';
 }
 
-interface HornerGrid {
-  normalizedDivisor: Fraction[];
-  leadingCoeff: Fraction;
-  productRows: Fraction[][];
-  finalRow: Fraction[];
-}
-
 interface DivisionResult {
+  grid: (Fraction | null)[][];
+  bottomRow: (Fraction | null)[];
   quotient: Fraction[];
-  quotientNorm: Fraction[];
   remainder: Fraction[];
   quotientLatex: string;
   remainderLatex: string;
-  horner: HornerGrid;
+  quotientLen: number;
+  divisorLen: number;
+  numCols: number;
+  separatorIndex: number;
 }
 
 export const PolynomialDivisionTool: React.FC = () => {
@@ -71,23 +76,23 @@ export const PolynomialDivisionTool: React.FC = () => {
 
   const updateDividendCoeff = (index: number, value: string) => {
     try {
-      const newCoeffs = [...dividendCoeffs];
-      newCoeffs[index] = new Fraction(value.trim() || '0');
-      setDividendCoeffs(newCoeffs);
+      const next = [...dividendCoeffs];
+      next[index] = new Fraction(value.trim() || '0');
+      setDividendCoeffs(next);
       setResult(null);
     } catch {
-      // invalid input
+      // Ignore invalid input while typing.
     }
   };
 
   const updateDivisorCoeff = (index: number, value: string) => {
     try {
-      const newCoeffs = [...divisorCoeffs];
-      newCoeffs[index] = new Fraction(value.trim() || '0');
-      setDivisorCoeffs(newCoeffs);
+      const next = [...divisorCoeffs];
+      next[index] = new Fraction(value.trim() || '0');
+      setDivisorCoeffs(next);
       setResult(null);
     } catch {
-      // invalid input
+      // Ignore invalid input while typing.
     }
   };
 
@@ -107,69 +112,105 @@ export const PolynomialDivisionTool: React.FC = () => {
         return;
       }
 
-      if (divisor.length > dividend.length) {
-        setError('El grado del divisor debe ser menor o igual al grado del dividendo.');
+      if (dividend.length < divisor.length) {
+        setError('El grado del dividendo no puede ser menor que el grado del divisor.');
         return;
       }
 
-      const n = dividend.length - 1;
-      const m = divisor.length - 1;
-      const leading = divisor[0];
-      const normalizedDivisor = divisor.map((c) => (c.div(leading) as Fraction));
-      const dTail = normalizedDivisor.slice(1);
+      const degDividend = dividend.length - 1;
+      const degDivisor = divisor.length - 1;
+      const quotientLen = degDividend - degDivisor + 1;
+      const numCols = degDividend + 2;
+      const gridRows = Math.max(degDivisor, quotientLen) + 1;
+      const separatorIndex = quotientLen;
 
-      const quotientLen = n - m + 1;
+      const grid: (Fraction | null)[][] = Array.from({ length: gridRows }, () => Array(numCols).fill(null));
+      const bottomRow: (Fraction | null)[] = Array(numCols).fill(null);
 
-      // Horner generalizado (division sintetica): solo propaga terminos del cociente.
-      const out = dividend.map((c) => new Fraction(c));
-      const quotientNorm: Fraction[] = [];
+      grid[0][0] = divisor[0];
+      for (let i = 0; i <= degDividend; i++) {
+        grid[0][i + 1] = dividend[i];
+      }
 
-      for (let i = 0; i < quotientLen; i++) {
-        const qi = out[i];
-        quotientNorm.push(qi);
-        for (let j = 1; j <= m; j++) {
-          out[i + j] = out[i + j].sub(qi.mul(dTail[j - 1]) as Fraction) as Fraction;
+      for (let i = 1; i <= degDivisor; i++) {
+        grid[i][0] = divisor[i].mul(-1) as Fraction;
+      }
+
+      const quotient: Fraction[] = [];
+
+      for (let step = 1; step <= quotientLen; step++) {
+        let sum = new Fraction(0);
+        for (let row = 0; row < gridRows; row++) {
+          const value = grid[row][step];
+          if (value) {
+            sum = sum.add(value) as Fraction;
+          }
+        }
+
+        const q = sum.div(divisor[0]) as Fraction;
+        quotient.push(q);
+        bottomRow[step] = q;
+
+        for (let k = 1; k <= degDivisor; k++) {
+          const prod = q.mul(divisor[k]).mul(-1) as Fraction;
+          const targetRow = step;
+          const targetCol = step + k;
+          if (targetRow < gridRows && targetCol < numCols) {
+            grid[targetRow][targetCol] = prod;
+          }
         }
       }
 
-      const remainder = out.slice(quotientLen);
-      const quotient = quotientNorm.map((q) => (q.div(leading) as Fraction));
+      const remainder: Fraction[] = [];
+      for (let col = quotientLen + 1; col <= degDividend + 1; col++) {
+        let sum = new Fraction(0);
+        for (let row = 0; row < gridRows; row++) {
+          const value = grid[row][col];
+          if (value) {
+            sum = sum.add(value) as Fraction;
+          }
+        }
+        remainder.push(sum);
+        bottomRow[col] = sum;
+      }
 
-      const productRows = quotientNorm.map((q) =>
-        dTail.map((d) => (d.mul(q).mul(-1) as Fraction))
-      );
+      if (remainder.length === 0) {
+        remainder.push(new Fraction(0));
+      }
 
       setResult({
+        grid,
+        bottomRow,
         quotient,
-        quotientNorm,
         remainder,
         quotientLatex: polynomialToLatex(quotient),
         remainderLatex: polynomialToLatex(remainder),
-        horner: {
-          normalizedDivisor,
-          leadingCoeff: leading,
-          productRows,
-          finalRow: out,
-        },
+        quotientLen,
+        divisorLen: degDivisor,
+        numCols,
+        separatorIndex,
       });
     } catch (err: unknown) {
       const error = err as Error;
-      setError(error.message || 'Error en la division.');
+      setError(error.message || 'Error en la división.');
+      setResult(null);
     }
   };
 
   return (
     <div className="space-y-6">
       <div className="border-2 border-blue-300 dark:border-blue-600 rounded-lg p-4">
-        <p className="text-blue-900 dark:text-blue-300 font-semibold mb-2">Division de Polinomios (Horner Generalizado)</p>
+        <p className="text-blue-900 dark:text-blue-300 font-semibold mb-2">
+          División de Polinomios (Horner Generalizado)
+        </p>
         <p className="text-slate-700 dark:text-slate-300 text-sm">
-          Se muestra la grilla del procedimiento de Horner para divisores de cualquier grado menor o igual al dividendo.
+          La grilla sigue la misma estructura del HTML de referencia, con los productos desplazados una columna por cada paso.
         </p>
       </div>
 
       <div>
         <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-4">
-          Coeficientes del Dividendo (de mayor grado a termino independiente)
+          Coeficientes del Dividendo (de mayor grado a término independiente)
         </label>
         <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${dividendCoeffs.length}, minmax(92px, 1fr))` }}>
           {dividendCoeffs.map((coeff, index) => {
@@ -222,7 +263,7 @@ export const PolynomialDivisionTool: React.FC = () => {
 
       <div>
         <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-4">
-          Coeficientes del Divisor (de mayor grado a termino independiente)
+          Coeficientes del Divisor (de mayor grado a término independiente)
         </label>
         <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${divisorCoeffs.length}, minmax(92px, 1fr))` }}>
           {divisorCoeffs.map((coeff, index) => {
@@ -282,77 +323,98 @@ export const PolynomialDivisionTool: React.FC = () => {
 
       {error && (
         <div className="p-4 border-2 border-red-400 dark:border-red-600 rounded-lg">
-          <p className="text-red-700 dark:text-red-300"><strong>Error:</strong> {error}</p>
+          <p className="text-red-700 dark:text-red-300">
+            <strong>Error:</strong> {error}
+          </p>
         </div>
       )}
 
       {result && (
         <div className="space-y-6">
           <div className="p-6 rounded-lg border-2 border-teal-300 dark:border-teal-700 bg-teal-50 dark:bg-teal-900/20 overflow-x-auto">
-            <h3 className="font-semibold text-teal-900 dark:text-teal-300 mb-3">Grilla del Procedimiento de Horner</h3>
-            {Number(result.horner.leadingCoeff.n) !== Number(result.horner.leadingCoeff.d) && (
-              <p className="text-xs text-teal-800 dark:text-teal-300 mb-3">
-                Divisor normalizado por el coeficiente lider {fractionToLatex(result.horner.leadingCoeff)} para construir la grilla.
-              </p>
-            )}
+            <h3 className="font-semibold text-teal-900 dark:text-teal-300 mb-3">
+              Grilla del Procedimiento de Horner
+            </h3>
             <table className="min-w-full border-collapse text-sm">
               <tbody>
                 <tr>
                   <td className="border-b-2 border-r-2 border-slate-600 dark:border-slate-400 p-3 text-center font-semibold text-blue-700 dark:text-blue-300 w-16">
-                    {fractionToLatex(result.horner.normalizedDivisor[0])}
+                    {fractionToLatex(new Fraction(1))}
                   </td>
-                  {dividendCoeffs.map((c, i) => (
-                    <td
-                      key={`a-${i}`}
-                      className={`border-b-2 border-slate-600 dark:border-slate-400 p-3 text-center font-semibold text-blue-700 dark:text-blue-300 ${
-                        i === result.quotient.length - 1 ? 'border-r-2 border-dashed border-r-slate-500 dark:border-r-slate-400' : ''
-                      }`}
-                    >
-                      {fractionToLatex(c)}
-                    </td>
-                  ))}
+                  {Array.from({ length: result.numCols - 1 }).map((_, i) => {
+                    const value = result.grid[0][i + 1];
+                    const isSeparator = i === result.separatorIndex;
+                    return (
+                      <td
+                        key={`top-${i}`}
+                        className={`border-b-2 border-slate-600 dark:border-slate-400 p-3 text-center font-semibold text-blue-700 dark:text-blue-300 ${
+                          isSeparator ? 'border-r-2 border-dashed border-r-slate-500 dark:border-r-slate-400' : ''
+                        }`}
+                      >
+                        {value ? fractionToLatex(value) : ''}
+                      </td>
+                    );
+                  })}
                 </tr>
 
-                {result.horner.productRows.map((row, rowIdx) => (
-                  <tr key={`row-${rowIdx}`}>
-                    <td className="border-r-2 border-slate-600 dark:border-slate-400 p-3 text-center font-semibold text-red-600 dark:text-red-400">
-                      {fractionToLatex(result.quotientNorm[rowIdx])}
-                    </td>
-                    {row.map((cell, colIdx) => (
-                      <td
-                        key={`cell-${rowIdx}-${colIdx}`}
-                        className="p-3 text-center text-slate-800 dark:text-slate-200"
-                      >
-                        {cell ? fractionToLatex(cell) : ''}
+                {result.grid.slice(1).map((row, rowIdx) => {
+                  const rowNumber = rowIdx + 1;
+                  const leftValue = row[0];
+                  const isProductRow = rowNumber <= result.quotientLen;
+
+                  return (
+                    <tr key={`row-${rowIdx}`}>
+                      <td className="border-r-2 border-slate-600 dark:border-slate-400 p-3 text-center font-semibold text-red-600 dark:text-red-400">
+                        {rowNumber <= result.divisorLen && leftValue ? fractionToLatex(leftValue) : ''}
                       </td>
-                    ))}
-                  </tr>
-                ))}
+                      {row.slice(1).map((cell, colIdx) => {
+                        const isSeparator = colIdx === result.separatorIndex;
+                        return (
+                          <td
+                            key={`cell-${rowIdx}-${colIdx}`}
+                            className={`p-3 text-center text-slate-800 dark:text-slate-200 ${
+                              isSeparator ? 'border-r-2 border-dashed border-r-slate-500 dark:border-r-slate-400' : ''
+                            }`}
+                          >
+                            {isProductRow && cell ? fractionToLatex(cell) : ''}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
 
                 <tr>
                   <td className="border-t-2 border-r-2 border-slate-600 dark:border-slate-400 p-3"></td>
-                  {result.horner.finalRow.map((bVal, i) => (
-                    <td
-                      key={`b-${i}`}
-                      className={`border-t-2 border-slate-600 dark:border-slate-400 p-3 text-center font-semibold text-green-700 dark:text-green-300 ${
-                        i === result.quotient.length - 1 ? 'border-r-2 border-dashed border-r-slate-500 dark:border-r-slate-400' : ''
-                      }`}
-                    >
-                      {fractionToLatex(bVal)}
-                    </td>
-                  ))}
+                  {result.bottomRow.slice(1).map((value, i) => {
+                    const isSeparator = i === result.separatorIndex;
+                    return (
+                      <td
+                        key={`bottom-${i}`}
+                        className={`border-t-2 border-slate-600 dark:border-slate-400 p-3 text-center font-semibold text-green-700 dark:text-green-300 ${
+                          isSeparator ? 'border-r-2 border-dashed border-r-slate-500 dark:border-r-slate-400' : ''
+                        }`}
+                      >
+                        {value ? fractionToLatex(value) : ''}
+                      </td>
+                    );
+                  })}
                 </tr>
               </tbody>
             </table>
           </div>
 
           <div className="p-6 border-2 border-blue-300 dark:border-blue-600 rounded-lg">
-            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">Polinomio Cociente Q(x)</p>
+            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">
+              Polinomio Cociente Q(x)
+            </p>
             <MathText expression={result.quotientLatex} className="block text-lg text-slate-900 dark:text-white" />
           </div>
 
           <div className="p-6 border-2 border-green-300 dark:border-green-600 rounded-lg">
-            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">Polinomio Residuo R(x)</p>
+            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">
+              Polinomio Residuo R(x)
+            </p>
             <MathText expression={result.remainderLatex} className="block text-lg text-slate-900 dark:text-white" />
           </div>
         </div>
