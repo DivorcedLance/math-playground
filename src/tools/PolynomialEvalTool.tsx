@@ -13,8 +13,14 @@ function fractionOrOneLatex(value: Fraction): string {
   return fractionToLatex({ numerator: Number(value.s * value.n), denominator: Number(value.d) });
 }
 
+function fractionToInput(value: Fraction): string {
+  const num = Number(value.s * value.n);
+  const den = Number(value.d);
+  if (den === 1) return String(num);
+  return `${num}/${den}`;
+}
+
 export const PolynomialEvalTool: React.FC = () => {
-  const [degree, setDegree] = useState<number>(3);
   const [coefficients, setCoefficients] = useState<Fraction[]>([
     new Fraction(1),
     new Fraction(0),
@@ -24,24 +30,6 @@ export const PolynomialEvalTool: React.FC = () => {
   const [xValue, setXValue] = useState<string>('2');
   const [result, setResult] = useState<PolyResult | null>(null);
   const [error, setError] = useState<string>('');
-
-  const increaseDegree = () => {
-    const newDegree = degree + 1;
-    const newCoeffs = [...coefficients, new Fraction(0)];
-    setDegree(newDegree);
-    setCoefficients(newCoeffs);
-    setResult(null);
-  };
-
-  const decreaseDegree = () => {
-    if (degree > 0) {
-      const newDegree = degree - 1;
-      const newCoeffs = coefficients.slice(0, -1);
-      setDegree(newDegree);
-      setCoefficients(newCoeffs);
-      setResult(null);
-    }
-  };
 
   const updateCoefficient = (index: number, value: string) => {
     try {
@@ -131,62 +119,59 @@ export const PolynomialEvalTool: React.FC = () => {
         </p>
       </div>
 
-      {/* Degree Selector */}
-      <div>
-        <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-3">
-          Grado del polinomio
-        </label>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={decreaseDegree}
-            disabled={degree === 0}
-            className="px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-400 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold"
-          >
-            −
-          </button>
-          <span className="text-2xl font-bold text-slate-900 dark:text-white min-w-12 text-center">{degree}</span>
-          <button
-            onClick={increaseDegree}
-            className="px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-400 dark:hover:bg-slate-600 transition-colors font-semibold"
-          >
-            +
-          </button>
-        </div>
-      </div>
-
       {/* Coefficients Input */}
       <div>
-        <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-3">
-          Coeficientes
+        <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-4">
+          Coeficientes del Polinomio (de mayor grado a término independiente)
         </label>
-        <div className="space-y-2">
+        <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${coefficients.length}, minmax(92px, 1fr))` }}>
           {coefficients.map((coeff, index) => {
             const deg = coefficients.length - 1 - index;
-            let label = '';
-            if (deg === 0) {
-              label = 'Término independiente';
-            } else if (deg === 1) {
-              label = 'Coeficiente de x';
-            } else {
-              label = `Coeficiente de x^${deg}`;
-            }
 
             return (
-              <div key={index} className="flex items-center gap-2">
-                <label className="text-xs text-slate-600 dark:text-slate-400 font-medium w-32">
-                  {label}
-                </label>
+              <div key={index} className="flex flex-col gap-2">
+                <div className="bg-slate-200 dark:bg-slate-700 rounded-lg p-2 text-center min-h-12 flex items-center justify-center">
+                  {deg === 0 ? (
+                    <span className="text-sm font-semibold text-slate-900 dark:text-white">Indep.</span>
+                  ) : (
+                    <MathText expression={`x^{${deg}}`} className="text-slate-900 dark:text-white font-semibold" />
+                  )}
+                </div>
                 <input
                   type="text"
-                  value={fractionOrOneLatex(coeff)}
+                  value={fractionToInput(coeff)}
                   onChange={(e) => updateCoefficient(index, e.target.value)}
                   placeholder="0"
-                  className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono text-sm"
+                  className="px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono text-sm"
                 />
               </div>
             );
           })}
         </div>
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          onClick={() => {
+            setCoefficients([...coefficients, new Fraction(0)]);
+            setResult(null);
+          }}
+          className="flex-1 px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-400 dark:hover:bg-slate-600 transition-colors font-semibold text-sm"
+        >
+          + Grado
+        </button>
+        <button
+          onClick={() => {
+            if (coefficients.length > 1) {
+              setCoefficients(coefficients.slice(0, -1));
+              setResult(null);
+            }
+          }}
+          disabled={coefficients.length === 1}
+          className="flex-1 px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-400 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold text-sm"
+        >
+          - Grado
+        </button>
       </div>
 
       {/* X Value */}
