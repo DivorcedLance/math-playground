@@ -9,140 +9,224 @@ function fractionToLatex(frac: Fraction): string {
   return `\\frac{${num}}{${den}}`;
 }
 
-const PRESET_POLYNOMIALS = {
-  'x3-5x+6': { name: 'x³ - 5x + 6', coeffs: '1,0,-5,6', root: '1' },
-  'x3+2x2-5x-6': { name: 'x³ + 2x² - 5x - 6', coeffs: '1,2,-5,-6', root: '-1' },
-  'x2-1': { name: 'x² - 1', coeffs: '1,0,-1', root: '1' },
-  'x2-4': { name: 'x² - 4', coeffs: '1,0,-4', root: '2' },
-};
+interface DivisionResult {
+  quotient: Fraction[];
+  remainder: Fraction[];
+  steps: string[];
+}
 
 export const PolynomialDivisionTool: React.FC = () => {
-  const [dividend, setDividend] = useState<string>('1,0,-5,6');
-  const [root, setRoot] = useState<string>('1');
-  const [hornerSteps, setHornerSteps] = useState<Fraction[] | null>(null);
-  const [result, setResult] = useState<string>('');
+  const [dividendDegree, setDividendDegree] = useState<number>(3);
+  const [divisorDegree, setDivisorDegree] = useState<number>(1);
+  const [dividendCoeffs, setDividendCoeffs] = useState<Fraction[]>([
+    new Fraction(1),
+    new Fraction(0),
+    new Fraction(-5),
+    new Fraction(6),
+  ]);
+  const [divisorCoeffs, setDivisorCoeffs] = useState<Fraction[]>([
+    new Fraction(1),
+    new Fraction(-1),
+  ]);
+  const [result, setResult] = useState<DivisionResult | null>(null);
   const [error, setError] = useState<string>('');
 
-  const handlePreset = (key: string) => {
-    const preset = PRESET_POLYNOMIALS[key as keyof typeof PRESET_POLYNOMIALS];
-    setDividend(preset.coeffs);
-    setRoot(preset.root);
-    setHornerSteps(null);
-    setResult('');
-    setError('');
+  const updateDividendCoeff = (index: number, value: string) => {
+    try {
+      const newCoeffs = [...dividendCoeffs];
+      newCoeffs[index] = new Fraction(value.trim() || '0');
+      setDividendCoeffs(newCoeffs);
+      setResult(null);
+    } catch {
+      // Invalid input
+    }
+  };
+
+  const updateDivisorCoeff = (index: number, value: string) => {
+    try {
+      const newCoeffs = [...divisorCoeffs];
+      newCoeffs[index] = new Fraction(value.trim() || '0');
+      setDivisorCoeffs(newCoeffs);
+      setResult(null);
+    } catch {
+      // Invalid input
+    }
   };
 
   const handleDivide = () => {
     try {
       setError('');
-      setHornerSteps(null);
-      setResult('');
+      setResult(null);
 
-      const coeffs = dividend.split(',').map(c => new Fraction(c.trim()));
-      const r = new Fraction(root.trim());
+      // Remove leading zeros from divisor
+      let divisor = [...divisorCoeffs];
+      while (divisor.length > 1 && Number(divisor[0].n) === 0) {
+        divisor.shift();
+      }
 
-      if (coeffs.length === 0) {
-        setError('Ingresa al menos un coeficiente');
+      if (divisor.length === 0 || (divisor.length === 1 && Number(divisor[0].n) === 0)) {
+        setError('El divisor no puede ser cero');
         return;
       }
 
-      // Horner's method (synthetic division)
-      const steps: Fraction[] = [coeffs[0]];
+      const dividend = [...dividendCoeffs];
+      const leadingCoeff = divisor[0];
+      const quotient: Fraction[] = [];
+      let remainder = [...dividend];
 
-      for (let i = 1; i < coeffs.length; i++) {
-        const newVal = (steps[i - 1].mul(r) as Fraction).add(coeffs[i]) as Fraction;
-        steps.push(newVal);
+      // Polynomial long division
+      while (remainder.length >= divisor.length) {
+        const leadingTerm = (remainder[0].div(leadingCoeff) as Fraction);
+        quotient.push(leadingTerm);
+
+        // Subtract leadingTerm * divisor from remainder
+        for (let i = 0; i < divisor.length; i++) {
+          remainder[i] = (remainder[i].sub(leadingTerm.mul(divisor[i]) as Fraction) as Fraction);
+        }
+
+        remainder.shift();
       }
 
-      setHornerSteps(steps);
-
-      const remainder = steps[steps.length - 1];
-      const quotient = steps.slice(0, -1);
-
-      let resultStr = '';
-      if (quotient.length > 0) {
-        resultStr = quotient.map(c => fractionToLatex(c)).join(' \\ \\text{, } \\ ');
+      // Remove leading zeros from remainder
+      while (remainder.length > 0 && Number(remainder[0].n) === 0) {
+        remainder.shift();
       }
 
-      if (Number(remainder.n) === 0) {
-        setResult(
-          `\\text{Cociente: } ${resultStr} \\\\
-           \\text{Residuo: } 0 \\text{ (raíz exacta)}`
-        );
-      } else {
-        setResult(
-          `\\text{Cociente: } ${resultStr} \\\\
-           \\text{Residuo: } ${fractionToLatex(remainder)}`
-        );
+      if (remainder.length === 0) {
+        remainder = [new Fraction(0)];
       }
+
+      setResult({
+        quotient,
+        remainder,
+        steps: [], // Steps generation can be added later
+      });
     } catch (err: any) {
       setError(err.message || 'Error en la división');
-      setHornerSteps(null);
-      setResult('');
+      setResult(null);
     }
   };
 
   return (
     <div className="space-y-6">
       {/* Instructions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-        <div className="rounded-lg border px-4 py-3 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
-          Método de Horner (divisor lineal)
-        </div>
-        <div className="rounded-lg border px-4 py-3 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
-          O usa un preset rápido abajo
+      <div className="border-2 border-blue-300 dark:border-blue-600 rounded-lg p-4">
+        <p className="text-blue-900 dark:text-blue-300 font-semibold mb-2">
+          División de Polinomios (Método de Horner)
+        </p>
+        <p className="text-slate-700 dark:text-slate-300 text-sm">
+          Divide dos polinomios usando el método de Horner. El divisor puede ser de cualquier grado.
+        </p>
+      </div>
+
+      {/* Dividend Section */}
+      <div>
+        <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-3">
+          Dividendo
+        </label>
+        <div className="space-y-2">
+          {dividendCoeffs.map((coeff, index) => {
+            const deg = dividendCoeffs.length - 1 - index;
+            let label = '';
+            if (deg === 0) label = 'Término independiente';
+            else if (deg === 1) label = 'Coeficiente de x';
+            else label = `Coeficiente de x^${deg}`;
+
+            return (
+              <div key={index} className="flex items-center gap-2">
+                <label className="text-xs text-slate-600 dark:text-slate-400 font-medium w-32">
+                  {label}
+                </label>
+                <input
+                  type="text"
+                  value={fractionToLatex(coeff)}
+                  onChange={(e) => updateDividendCoeff(index, e.target.value)}
+                  placeholder="0"
+                  className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono text-sm"
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Presets */}
+      {/* Divisor Section */}
+      <div>
+        <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-3">
+          Divisor
+        </label>
+        <div className="space-y-2">
+          {divisorCoeffs.map((coeff, index) => {
+            const deg = divisorCoeffs.length - 1 - index;
+            let label = '';
+            if (deg === 0) label = 'Término independiente';
+            else if (deg === 1) label = 'Coeficiente de x';
+            else label = `Coeficiente de x^${deg}`;
+
+            return (
+              <div key={index} className="flex items-center gap-2">
+                <label className="text-xs text-slate-600 dark:text-slate-400 font-medium w-32">
+                  {label}
+                </label>
+                <input
+                  type="text"
+                  value={fractionToLatex(coeff)}
+                  onChange={(e) => updateDivisorCoeff(index, e.target.value)}
+                  placeholder="0"
+                  className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono text-sm"
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Quick Presets */}
       <div>
         <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-2">
           Ejemplos rápidos
         </label>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {Object.entries(PRESET_POLYNOMIALS).map(([key, preset]) => (
-            <button
-              key={key}
-              onClick={() => handlePreset(key)}
-              className="px-3 py-2 text-xs font-semibold border-2 border-slate-300 dark:border-slate-700 rounded-lg hover:border-primary-400 dark:hover:border-primary-600 transition-colors text-slate-900 dark:text-white"
-            >
-              {preset.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Manual Input */}
-      <div>
-        <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-2">
-          O ingresa manualmente
-        </label>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-              Coeficientes (mayor a menor grado)
-            </label>
-            <input
-              type="text"
-              value={dividend}
-              onChange={(e) => setDividend(e.target.value)}
-              placeholder="Ej: 1,0,-5,6"
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono text-sm"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-              Raíz (x=?)
-            </label>
-            <input
-              type="text"
-              value={root}
-              onChange={(e) => setRoot(e.target.value)}
-              placeholder="Ej: 1"
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono text-sm"
-            />
-          </div>
+          <button
+            onClick={() => {
+              setDividendCoeffs([new Fraction(1), new Fraction(0), new Fraction(-5), new Fraction(6)]);
+              setDivisorCoeffs([new Fraction(1), new Fraction(-1)]);
+              setResult(null);
+            }}
+            className="px-3 py-2 text-xs font-semibold border-2 border-slate-300 dark:border-slate-700 rounded-lg hover:border-primary-400 dark:hover:border-primary-600 transition-colors text-slate-900 dark:text-white"
+          >
+            x³ - 5x + 6 ÷ (x - 1)
+          </button>
+          <button
+            onClick={() => {
+              setDividendCoeffs([new Fraction(1), new Fraction(2), new Fraction(-5), new Fraction(-6)]);
+              setDivisorCoeffs([new Fraction(1), new Fraction(-2)]);
+              setResult(null);
+            }}
+            className="px-3 py-2 text-xs font-semibold border-2 border-slate-300 dark:border-slate-700 rounded-lg hover:border-primary-400 dark:hover:border-primary-600 transition-colors text-slate-900 dark:text-white"
+          >
+            x³ + 2x² - 5x - 6 ÷ (x - 2)
+          </button>
+          <button
+            onClick={() => {
+              setDividendCoeffs([new Fraction(1), new Fraction(0), new Fraction(-1)]);
+              setDivisorCoeffs([new Fraction(1), new Fraction(1)]);
+              setResult(null);
+            }}
+            className="px-3 py-2 text-xs font-semibold border-2 border-slate-300 dark:border-slate-700 rounded-lg hover:border-primary-400 dark:hover:border-primary-600 transition-colors text-slate-900 dark:text-white"
+          >
+            x² - 1 ÷ (x + 1)
+          </button>
+          <button
+            onClick={() => {
+              setDividendCoeffs([new Fraction(1), new Fraction(2), new Fraction(1)]);
+              setDivisorCoeffs([new Fraction(1), new Fraction(1)]);
+              setResult(null);
+            }}
+            className="px-3 py-2 text-xs font-semibold border-2 border-slate-300 dark:border-slate-700 rounded-lg hover:border-primary-400 dark:hover:border-primary-600 transition-colors text-slate-900 dark:text-white"
+          >
+            x² + 2x + 1 ÷ (x + 1)
+          </button>
         </div>
       </div>
 
@@ -151,7 +235,7 @@ export const PolynomialDivisionTool: React.FC = () => {
         onClick={handleDivide}
         className="w-full px-4 py-3 bg-primary-600 dark:bg-primary-700 text-white rounded-lg hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors font-semibold"
       >
-        Aplicar Horner
+        Dividir
       </button>
 
       {/* Error */}
@@ -163,64 +247,43 @@ export const PolynomialDivisionTool: React.FC = () => {
         </div>
       )}
 
-      {/* Horner Grid */}
-      {hornerSteps && (
-        <div className="p-4 rounded-lg border-2 border-blue-300 dark:border-blue-600 overflow-x-auto">
-          <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-3">
-            Grilla de Horner
-          </p>
-          <table className="w-full text-sm border-collapse text-slate-900 dark:text-white">
-            <tbody>
-              <tr>
-                <td className="border border-slate-300 dark:border-slate-700 px-3 py-2 font-semibold text-center">
-                  {dividend.split(',')[0]}
-                </td>
-                {dividend.split(',').slice(1).map((_, i) => (
-                  <td
-                    key={`mult-${i}`}
-                    className="border border-slate-300 dark:border-slate-700 px-3 py-2 text-center text-xs text-slate-500 dark:text-slate-400"
-                  >
-                    ×{fractionToLatex(new Fraction(root))}
-                  </td>
-                ))}
-              </tr>
-              <tr>
-                <td className="border border-slate-300 dark:border-slate-700 px-3 py-2" />
-                {hornerSteps.slice(0, -1).map((val, i) => (
-                  <td
-                    key={`step-${i}`}
-                    className="border border-slate-300 dark:border-slate-700 px-3 py-2 text-center font-mono"
-                  >
-                    {fractionToLatex(val)}
-                  </td>
-                ))}
-              </tr>
-              <tr>
-                <td className="border border-slate-300 dark:border-slate-700 px-3 py-2 font-semibold text-center">
-                  {dividend.split(',')[0]}
-                </td>
-                {hornerSteps.map((val, i) => (
-                  <td
-                    key={`result-${i}`}
-                    className={`border font-mono font-semibold px-3 py-2 text-center ${
-                      i === hornerSteps.length - 1
-                        ? 'border-green-400 dark:border-green-600 bg-green-100 dark:bg-green-900/20'
-                        : 'border-slate-300 dark:border-slate-700'
-                    }`}
-                  >
-                    {fractionToLatex(val)}
-                  </td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      )}
-
       {/* Result */}
       {result && (
-        <div className="p-6 border-2 border-green-300 dark:border-green-600 rounded-lg">
-          <MathText expression={result} className="block text-lg text-slate-900 dark:text-white" />
+        <div className="space-y-4">
+          {/* Quotient */}
+          <div className="p-6 border-2 border-blue-300 dark:border-blue-600 rounded-lg">
+            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">
+              Cociente
+            </p>
+            {result.quotient.length > 0 ? (
+              <MathText
+                expression={result.quotient.map(c => fractionToLatex(c)).join(' + ').replace(/\+ -/g, '- ')}
+                className="block text-lg text-slate-900 dark:text-white"
+              />
+            ) : (
+              <p className="text-slate-900 dark:text-white">0</p>
+            )}
+          </div>
+
+          {/* Remainder */}
+          <div className="p-6 border-2 border-green-300 dark:border-green-600 rounded-lg">
+            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-2">
+              Residuo
+            </p>
+            <MathText
+              expression={result.remainder.map(c => fractionToLatex(c)).join(' + ').replace(/\+ -/g, '- ') || '0'}
+              className="block text-lg text-slate-900 dark:text-white"
+            />
+          </div>
+
+          {/* Check if exact division */}
+          {result.remainder.length === 1 && Number(result.remainder[0].n) === 0 && (
+            <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <p className="text-yellow-700 dark:text-yellow-300 font-semibold">
+                ✓ División exacta: el divisor es un factor del dividendo.
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>
