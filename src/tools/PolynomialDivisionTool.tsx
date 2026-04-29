@@ -134,16 +134,20 @@ export const PolynomialDivisionTool: React.FC = () => {
       const remainder = out.slice(quotientLen);
       const quotient = quotientNorm.map((q) => (q.div(leading) as Fraction));
 
-      const rows: (Fraction | null)[][] = dTail.map((dj, jIdx) => {
-        const row = Array.from({ length: n + 1 }, () => null as Fraction | null);
-        for (let i = 0; i < quotientLen; i++) {
-          const col = i + 1 + jIdx;
-          if (col < dividend.length) {
-            row[col] = (dj.mul(quotientNorm[i]).mul(-1) as Fraction);
+      const rows: (Fraction | null)[][] = dTail.map(() =>
+        Array.from({ length: n + 1 }, () => null as Fraction | null)
+      );
+
+      // Fill products top-to-bottom by synthetic step (quotient coefficient),
+      // matching the hand-written Horner grid layout.
+      for (let step = 0; step < quotientLen; step++) {
+        for (let j = 0; j < m; j++) {
+          const col = step + 1 + j;
+          if (step < rows.length && col < dividend.length) {
+            rows[step][col] = (dTail[j].mul(quotientNorm[step]).mul(-1) as Fraction);
           }
         }
-        return row;
-      });
+      }
 
       setResult({
         quotient,
