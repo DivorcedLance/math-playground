@@ -231,18 +231,9 @@ export const PolynomialDivisionTool: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="border-2 border-blue-300 dark:border-blue-600 rounded-lg p-4">
-        <p className="text-blue-900 dark:text-blue-300 font-semibold mb-2">
-          División de Polinomios (Horner Generalizado)
-        </p>
-        <p className="text-slate-700 dark:text-slate-300 text-sm">
-          La grilla sigue la misma estructura del HTML de referencia, con los productos desplazados una columna por cada paso.
-        </p>
-      </div>
-
       <div>
         <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-4">
-          Coeficientes del Dividendo (de mayor grado a término independiente)
+          Dividendo
         </label>
         <div className="overflow-x-auto">
           <div className="grid gap-4 min-w-min" style={{ gridTemplateColumns: `repeat(${dividendCoeffs.length}, minmax(92px, 1fr))` }}>
@@ -297,7 +288,7 @@ export const PolynomialDivisionTool: React.FC = () => {
 
       <div>
         <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-4">
-          Coeficientes del Divisor (de mayor grado a término independiente)
+          Divisor
         </label>
         <div className="overflow-x-auto">
           <div className="grid gap-4 min-w-min" style={{ gridTemplateColumns: `repeat(${divisorCoeffs.length}, minmax(92px, 1fr))` }}>

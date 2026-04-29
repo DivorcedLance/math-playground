@@ -111,20 +111,10 @@ export const PolynomialEvalTool: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Instructions */}
-      <div className="border-2 border-blue-300 dark:border-blue-600 rounded-lg p-4">
-        <p className="text-blue-900 dark:text-blue-300 font-semibold mb-2">
-          Evaluación de Polinomios
-        </p>
-        <p className="text-slate-700 dark:text-slate-300 text-sm">
-          Ajusta el grado del polinomio y luego ingresa cada coeficiente. Usa fracciones (ej: 1/2) o decimales.
-        </p>
-      </div>
-
       {/* Coefficients Input */}
       <div>
         <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-4">
-          Coeficientes del Polinomio (de mayor grado a término independiente)
+          Coeficientes
         </label>
         <div className="overflow-x-auto">
           <div className="grid gap-4 min-w-min" style={{ gridTemplateColumns: `repeat(${coefficients.length}, minmax(92px, 1fr))` }}>
