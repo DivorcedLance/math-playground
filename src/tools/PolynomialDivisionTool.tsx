@@ -117,25 +117,30 @@ export const PolynomialDivisionTool: React.FC = () => {
       const normalizedDivisor = divisor.map((c) => (c.div(leading) as Fraction));
       const dTail = normalizedDivisor.slice(1);
 
-      // Generalized Horner recurrence (divisor normalized to monic)
-      const b: Fraction[] = [];
-      for (let k = 0; k <= n; k++) {
-        let value = new Fraction(dividend[k]);
-        const maxJ = Math.min(k, m);
-        for (let j = 1; j <= maxJ; j++) {
-          value = value.sub(dTail[j - 1].mul(b[k - j]) as Fraction) as Fraction;
+      const quotientLen = n - m + 1;
+
+      // Horner generalizado (division sintetica): solo propaga terminos del cociente.
+      const out = dividend.map((c) => new Fraction(c));
+      const quotientNorm: Fraction[] = [];
+
+      for (let i = 0; i < quotientLen; i++) {
+        const qi = out[i];
+        quotientNorm.push(qi);
+        for (let j = 1; j <= m; j++) {
+          out[i + j] = out[i + j].sub(qi.mul(dTail[j - 1]) as Fraction) as Fraction;
         }
-        b.push(value);
       }
 
-      const quotientNorm = b.slice(0, n - m + 1);
-      const remainder = b.slice(n - m + 1);
+      const remainder = out.slice(quotientLen);
       const quotient = quotientNorm.map((q) => (q.div(leading) as Fraction));
 
       const rows: (Fraction | null)[][] = dTail.map((dj, jIdx) => {
         const row = Array.from({ length: n + 1 }, () => null as Fraction | null);
-        for (let col = jIdx + 1; col <= n; col++) {
-          row[col] = (dj.mul(b[col - (jIdx + 1)]).mul(-1) as Fraction);
+        for (let i = 0; i < quotientLen; i++) {
+          const col = i + 1 + jIdx;
+          if (col < dividend.length) {
+            row[col] = (dj.mul(quotientNorm[i]).mul(-1) as Fraction);
+          }
         }
         return row;
       });
@@ -149,7 +154,7 @@ export const PolynomialDivisionTool: React.FC = () => {
           normalizedDivisor,
           leadingCoeff: leading,
           rows,
-          finalRow: b,
+          finalRow: out,
         },
       });
     } catch (err: unknown) {
@@ -298,11 +303,16 @@ export const PolynomialDivisionTool: React.FC = () => {
             <table className="min-w-full border-collapse text-sm">
               <tbody>
                 <tr>
-                  <td className="border border-slate-400 dark:border-slate-600 p-2 text-center font-semibold text-blue-700 dark:text-blue-300">
+                  <td className="border-b-2 border-r-2 border-slate-600 dark:border-slate-400 p-3 text-center font-semibold text-blue-700 dark:text-blue-300 w-16">
                     {fractionToLatex(result.horner.normalizedDivisor[0])}
                   </td>
                   {dividendCoeffs.map((c, i) => (
-                    <td key={`a-${i}`} className="border border-slate-400 dark:border-slate-600 p-2 text-center font-semibold text-blue-700 dark:text-blue-300">
+                    <td
+                      key={`a-${i}`}
+                      className={`border-b-2 border-slate-600 dark:border-slate-400 p-3 text-center font-semibold text-blue-700 dark:text-blue-300 ${
+                        i === result.quotient.length - 1 ? 'border-r-2 border-dashed border-r-slate-500 dark:border-r-slate-400' : ''
+                      }`}
+                    >
                       {fractionToLatex(c)}
                     </td>
                   ))}
@@ -310,11 +320,16 @@ export const PolynomialDivisionTool: React.FC = () => {
 
                 {result.horner.rows.map((row, rowIdx) => (
                   <tr key={`row-${rowIdx}`}>
-                    <td className="border border-slate-300 dark:border-slate-700 p-2 text-center font-semibold text-red-600 dark:text-red-400">
+                    <td className="border-r-2 border-slate-600 dark:border-slate-400 p-3 text-center font-semibold text-red-600 dark:text-red-400">
                       {fractionToLatex((result.horner.normalizedDivisor[rowIdx + 1].mul(-1) as Fraction))}
                     </td>
                     {row.map((cell, colIdx) => (
-                      <td key={`cell-${rowIdx}-${colIdx}`} className="border border-slate-300 dark:border-slate-700 p-2 text-center text-slate-700 dark:text-slate-300">
+                      <td
+                        key={`cell-${rowIdx}-${colIdx}`}
+                        className={`p-3 text-center text-slate-800 dark:text-slate-200 ${
+                          colIdx === result.quotient.length - 1 ? 'border-r-2 border-dashed border-r-slate-500 dark:border-r-slate-400' : ''
+                        }`}
+                      >
                         {cell ? fractionToLatex(cell) : ''}
                       </td>
                     ))}
@@ -322,9 +337,14 @@ export const PolynomialDivisionTool: React.FC = () => {
                 ))}
 
                 <tr>
-                  <td className="border-t-2 border-slate-500 dark:border-slate-400 p-2"></td>
+                  <td className="border-t-2 border-r-2 border-slate-600 dark:border-slate-400 p-3"></td>
                   {result.horner.finalRow.map((bVal, i) => (
-                    <td key={`b-${i}`} className="border-t-2 border-slate-500 dark:border-slate-400 p-2 text-center font-semibold text-green-700 dark:text-green-300">
+                    <td
+                      key={`b-${i}`}
+                      className={`border-t-2 border-slate-600 dark:border-slate-400 p-3 text-center font-semibold text-green-700 dark:text-green-300 ${
+                        i === result.quotient.length - 1 ? 'border-r-2 border-dashed border-r-slate-500 dark:border-r-slate-400' : ''
+                      }`}
+                    >
                       {fractionToLatex(bVal)}
                     </td>
                   ))}
