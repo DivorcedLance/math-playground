@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Fraction from 'fraction.js';
 import { MathText } from '../components';
 
@@ -51,28 +51,60 @@ interface DivisionResult {
   separatorIndex: number;
 }
 
+const DEFAULT_DIVIDEND = [
+  new Fraction(1),
+  new Fraction(2),
+  new Fraction(3),
+  new Fraction(4),
+  new Fraction(5),
+  new Fraction(6),
+];
+
+const DEFAULT_DIVISOR = [
+  new Fraction(1),
+  new Fraction(1),
+  new Fraction(1),
+  new Fraction(1),
+];
+
+const STORAGE_KEY = 'polynomial-division-tool';
+
 export const PolynomialDivisionTool: React.FC = () => {
-  const [dividendCoeffs, setDividendCoeffs] = useState<Fraction[]>([
-    new Fraction(5),
-    new Fraction(4),
-    new Fraction(9),
-    new Fraction(-3),
-    new Fraction(2),
-    new Fraction(10),
-    new Fraction(9),
-    new Fraction(5),
-    new Fraction(1),
-  ]);
-  const [divisorCoeffs, setDivisorCoeffs] = useState<Fraction[]>([
-    new Fraction(1),
-    new Fraction(3),
-    new Fraction(2),
-    new Fraction(1),
-    new Fraction(0),
-    new Fraction(1),
-  ]);
+  const [dividendCoeffs, setDividendCoeffs] = useState<Fraction[]>(DEFAULT_DIVIDEND);
+  const [divisorCoeffs, setDivisorCoeffs] = useState<Fraction[]>(DEFAULT_DIVISOR);
   const [result, setResult] = useState<DivisionResult | null>(null);
   const [error, setError] = useState<string>('');
+
+  // Cargar datos del localStorage al montar el componente
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data.dividend && data.dividend.length > 0) {
+          setDividendCoeffs(data.dividend.map((c: any) => new Fraction(c.n || 0, c.d || 1)));
+        }
+        if (data.divisor && data.divisor.length > 0) {
+          setDivisorCoeffs(data.divisor.map((c: any) => new Fraction(c.n || 0, c.d || 1)));
+        }
+      }
+    } catch (err) {
+      console.error('Error cargando datos del localStorage:', err);
+    }
+  }, []);
+
+  // Guardar datos en localStorage cuando cambien los coeficientes
+  useEffect(() => {
+    try {
+      const data = {
+        dividend: dividendCoeffs.map(f => ({ n: f.n, d: f.d })),
+        divisor: divisorCoeffs.map(f => ({ n: f.n, d: f.d })),
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (err) {
+      console.error('Error guardando datos en localStorage:', err);
+    }
+  }, [dividendCoeffs, divisorCoeffs]);
 
   const updateDividendCoeff = (index: number, value: string) => {
     try {
