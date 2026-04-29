@@ -76,7 +76,7 @@ export const PolynomialEvalTool: React.FC = () => {
         const degree = coefficients.length - 1 - i;
         const coeff = coefficients[i];
         const coeffLatex = fractionOrOneLatex(coeff);
-        const coeffNum = Number(coeff.n);
+        const coeffNum = Number(coeff.s * coeff.n);
         const sign = coeffNum < 0 ? '' : '+ ';
 
         if (degree === 0) {
@@ -126,7 +126,8 @@ export const PolynomialEvalTool: React.FC = () => {
         <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-4">
           Coeficientes del Polinomio (de mayor grado a término independiente)
         </label>
-        <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${coefficients.length}, minmax(92px, 1fr))` }}>
+        <div className="overflow-x-auto">
+          <div className="grid gap-4 min-w-min" style={{ gridTemplateColumns: `repeat(${coefficients.length}, minmax(92px, 1fr))` }}>
           {coefficients.map((coeff, index) => {
             const deg = coefficients.length - 1 - index;
 
@@ -149,6 +150,7 @@ export const PolynomialEvalTool: React.FC = () => {
               </div>
             );
           })}
+          </div>
         </div>
       </div>
 

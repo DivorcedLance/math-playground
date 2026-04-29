@@ -244,7 +244,8 @@ export const PolynomialDivisionTool: React.FC = () => {
         <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-4">
           Coeficientes del Dividendo (de mayor grado a término independiente)
         </label>
-        <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${dividendCoeffs.length}, minmax(92px, 1fr))` }}>
+        <div className="overflow-x-auto">
+          <div className="grid gap-4 min-w-min" style={{ gridTemplateColumns: `repeat(${dividendCoeffs.length}, minmax(92px, 1fr))` }}>
           {dividendCoeffs.map((coeff, index) => {
             const deg = dividendCoeffs.length - 1 - index;
             return (
@@ -266,6 +267,7 @@ export const PolynomialDivisionTool: React.FC = () => {
               </div>
             );
           })}
+          </div>
         </div>
       </div>
 
@@ -297,7 +299,8 @@ export const PolynomialDivisionTool: React.FC = () => {
         <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-4">
           Coeficientes del Divisor (de mayor grado a término independiente)
         </label>
-        <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${divisorCoeffs.length}, minmax(92px, 1fr))` }}>
+        <div className="overflow-x-auto">
+          <div className="grid gap-4 min-w-min" style={{ gridTemplateColumns: `repeat(${divisorCoeffs.length}, minmax(92px, 1fr))` }}>
           {divisorCoeffs.map((coeff, index) => {
             const deg = divisorCoeffs.length - 1 - index;
             return (
@@ -319,6 +322,7 @@ export const PolynomialDivisionTool: React.FC = () => {
               </div>
             );
           })}
+          </div>
         </div>
       </div>
 
