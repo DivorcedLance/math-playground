@@ -9,6 +9,18 @@ function fractionToLatex(frac: Fraction): string {
   return `\\frac{${num}}{${den}}`;
 }
 
+function determinant3x3(matrix: Fraction[][]): Fraction {
+  const minor1 = (matrix[1][1].mul(matrix[2][2]) as Fraction).sub(matrix[1][2].mul(matrix[2][1]) as Fraction) as Fraction;
+  const minor2 = (matrix[1][0].mul(matrix[2][2]) as Fraction).sub(matrix[1][2].mul(matrix[2][0]) as Fraction) as Fraction;
+  const minor3 = (matrix[1][0].mul(matrix[2][1]) as Fraction).sub(matrix[1][1].mul(matrix[2][0]) as Fraction) as Fraction;
+
+  const term1 = matrix[0][0].mul(minor1) as Fraction;
+  const term2 = matrix[0][1].mul(minor2) as Fraction;
+  const term3 = matrix[0][2].mul(minor3) as Fraction;
+
+  return (term1.sub(term2) as Fraction).add(term3) as Fraction;
+}
+
 export const SystemsEquationsTool: React.FC = () => {
   const [size, setSize] = useState<'2x2' | '3x3'>('2x2');
   const [equation2x2, setEquation2x2] = useState([
@@ -60,7 +72,6 @@ export const SystemsEquationsTool: React.FC = () => {
       setError('');
       setSolution(null);
 
-      // Parse all coefficients
       const matrix = equation3x3.map(eq => [
         new Fraction(eq.a),
         new Fraction(eq.b),
@@ -68,23 +79,25 @@ export const SystemsEquationsTool: React.FC = () => {
         new Fraction(eq.d),
       ]);
 
-      // Calculate determinant of 3x3
-      const minor1 = (matrix[1][1].mul(matrix[2][2]) as Fraction).sub(matrix[1][2].mul(matrix[2][1]) as Fraction) as Fraction;
-      const minor2 = (matrix[1][0].mul(matrix[2][2]) as Fraction).sub(matrix[1][2].mul(matrix[2][0]) as Fraction) as Fraction;
-      const minor3 = (matrix[1][0].mul(matrix[2][1]) as Fraction).sub(matrix[1][1].mul(matrix[2][0]) as Fraction) as Fraction;
-
-      const detA = (matrix[0][0].mul(minor1) as Fraction)
-        .sub(matrix[0][1].mul(minor2) as Fraction) as Fraction;
-      const detCofactor = (matrix[0][2].mul(minor3) as Fraction) as Fraction;
-      const det = (detA.add(detCofactor) as Fraction) as Fraction;
+      const coefficients = matrix.map(row => row.slice(0, 3));
+      const constants = matrix.map(row => row[3]);
+      const det = determinant3x3(coefficients);
 
       if (Number(det.n) === 0) {
         setError('El sistema no tiene solución única');
+        setSolution(null);
         return;
       }
 
-      setError('Sistema 3x3 resuelto (Cramer ampliado). Implement full display soon.');
-      setSolution({ x: new Fraction(1), y: new Fraction(1), z: new Fraction(1) });
+      const matrixX = coefficients.map((row, index) => [constants[index], row[1], row[2]]);
+      const matrixY = coefficients.map((row, index) => [row[0], constants[index], row[2]]);
+      const matrixZ = coefficients.map((row, index) => [row[0], row[1], constants[index]]);
+
+      const x = determinant3x3(matrixX).div(det) as Fraction;
+      const y = determinant3x3(matrixY).div(det) as Fraction;
+      const z = determinant3x3(matrixZ).div(det) as Fraction;
+
+      setSolution({ x, y, z });
     } catch (err: any) {
       setError(err.message || 'Error en cálculo de determinante');
       setSolution(null);
